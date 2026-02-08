@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monopoly Voice Banking - Pro Edition</title>
+    <style>
+        :root {
+            --bg-color: #050505;
+            --unit-bg: #151515;
+            --blu: #007bff; --giallo: #ffcc00; --rosso: #ff4d4d; --verde: #2ecc71;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: white;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Schermata Iniziale */
+        #setup-overlay {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: 0.8s ease;
+        }
+
+        .setup-card {
+            background: #111;
+            padding: 40px;
+            border-radius: 40px;
+            border: 1px solid #333;
+            text-align: center;
+        }
+
+        .color-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .chip {
+            padding: 25px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            border: 5px solid transparent;
+            transition: 0.3s;
+            font-size: 1.2rem;
+        }
+
+        .chip.selected { border-color: white; transform: scale(1.05); }
+
+        /* Unità Centrale */
+        .banker-wrapper {
+            position: relative;
+            width: 420px;
+            height: 420px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .banker-unit {
+            position: relative;
+            width: 320px;
+            height: 320px;
+            background: var(--unit-bg);
+            border-radius: 50%;
+            border: 10px solid #222;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 5;
+            box-shadow: inset 0 0 50px #000;
+        }
+
+        /* Luci Giocatori */
+        .listening-blu { border-color: var(--blu) !important; box-shadow: 0 0 60px var(--blu), inset 0 0 30px var(--blu); }
+        .listening-giallo { border-color: var(--giallo) !important; box-shadow: 0 0 60px var(--giallo), inset 0 0 30px var(--giallo); }
+        .listening-rosso { border-color: var(--rosso) !important; box-shadow: 0 0 60px var(--rosso), inset 0 0 30px var(--rosso); }
+        .listening-verde { border-color: var(--verde) !important; box-shadow: 0 0 60px var(--verde), inset 0 0 30px var(--verde); }
+
+        #status-text { color: #555; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 5px; }
+        #transcript { font-size: 1.5rem; font-weight: bold; text-align: center; padding: 0 30px; min-height: 3rem; display: flex; align-items: center; }
+
+        /* Pulsanti Giocatori */
+        .player-btn {
+            position: absolute;
+            width: 85px;
+            height: 85px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 10;
+            border: 5px solid rgba(0,0,0,0.4);
+        }
+
+        .btn-blu { top: 0; left: 50%; transform: translateX(-50%); background: var(--blu); }
+        .btn-giallo { bottom: 0; left: 50%; transform: translateX(-50%); background: var(--giallo); }
+        .btn-rosso { left: 0; top: 50%; transform: translateY(-50%); background: var(--rosso); }
+        .btn-verde { right: 0; top: 50%; transform: translateY(-50%); background: var(--verde); }
+
+        .player-btn.active-focus {
+            top: 50% !important; left: 50% !important;
+            transform: translate(-50%, -50%) scale(1.6) !important;
+            z-index: 100;
+            box-shadow: 0 0 50px rgba(255,255,255,0.4);
+        }
+
+        /* Dashbord Saldi */
+        #balances { margin-top: 50px; display: flex; gap: 15px; }
+        .balance-card {
+            background: #111; padding: 15px 20px; border-radius: 15px;
+            text-align: center; display: none; border-bottom: 5px solid transparent;
+        }
+        .balance-card.active { display: block; }
+        .money { font-size: 1.3rem; font-weight: bold; display: block; }
+
+        button#start-btn {
+            background: white; color: black; border: none; padding: 18px 50px;
+            border-radius: 40px; font-weight: bold; font-size: 1.2rem; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="setup-overlay">
+        <div class="setup-card">
+            <h1>VOICE BANKING</h1>
+            <p>Seleziona i partecipanti</p>
+            <div class="color-selector">
+                <div class="chip" style="background:var(--blu)" onclick="togglePlayer('blu', this)">BLU</div>
+                <div class="chip" style="background:var(--giallo); color:black" onclick="togglePlayer('giallo', this)">GIALLO</div>
+                <div class="chip" style="background:var(--rosso)" onclick="togglePlayer('rosso', this)">ROSSO</div>
+                <div class="chip" style="background:var(--verde)" onclick="togglePlayer('verde', this)">VERDE</div>
+            </div>
+            <button id="start-btn" onclick="startGame()">INIZIA PARTITA</button>
+        </div>
+    </div>
+
+    <div class="banker-wrapper">
+        <div class="banker-unit" id="unit">
+            <div id="status-text">Pronto</div>
+            <div id="transcript">Tocca il tuo colore</div>
+        </div>
+
+        <div id="btn-blu" class="player-btn btn-blu" onclick="activate('blu')"></div>
+        <div id="btn-giallo" class="player-btn btn-giallo" onclick="activate('giallo')"></div>
+        <div id="btn-rosso" class="player-btn btn-rosso" onclick="activate('rosso')"></div>
+        <div id="btn-verde" class="player-btn btn-verde" onclick="activate('verde')"></div>
+    </div>
+
+    <div id="balances">
+        <div id="card-blu" class="balance-card" style="border-color:var(--blu)"><span>BLU</span><span class="money" id="bal-blu">15.0M</span></div>
+        <div id="card-giallo" class="balance-card" style="border-color:var(--giallo)"><span>GIALLO</span><span class="money" id="bal-giallo">15.0M</span></div>
+        <div id="card-rosso" class="balance-card" style="border-color:var(--rosso)"><span>ROSSO</span><span class="money" id="bal-rosso">15.0M</span></div>
+        <div id="card-verde" class="balance-card" style="border-color:var(--verde)"><span>VERDE</span><span class="money" id="bal-verde">15.0M</span></div>
+    </div>
+
+    <script>
+        let gameState = {
+            players: {},
+            properties: {
+                "vicolo corto": { price: 600000, rent: 100000, owner: null },
+                "vicolo stretto": { price: 600000, rent: 150000, owner: null },
+                "via roma": { price: 3000000, rent: 750000, owner: null },
+                "parco della vittoria": { price: 4000000, rent: 1500000, owner: null }
+                
+            }
+        };
+
+        let selectedColors = [];
+        let activeActor = null;
+        let recognition;
+        let bestVoice = null;
+
+        // --- INIZIALIZZAZIONE VOCE MIGLIORE ---
+        function loadVoices() {
+            const voices = window.speechSynthesis.getVoices();
+            // Cerchiamo Google Italiano o Microsoft Elsa (voci naturali online)
+            bestVoice = voices.find(v => v.name.includes("Google") && v.lang.startsWith("it")) || 
+                        voices.find(v => v.name.includes("Online") && v.lang.startsWith("it")) ||
+                        voices.find(v => v.lang.startsWith("it"));
+        }
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+
+        function speak(text) {
+            window.speechSynthesis.cancel(); // Ferma voci precedenti
+            const utter = new SpeechSynthesisUtterance(text);
+            if (bestVoice) utter.voice = bestVoice;
+            utter.lang = 'it-IT';
+            utter.pitch = 1.0;
+            utter.rate = 1.0;
+            window.speechSynthesis.speak(utter);
+        }
+
+        // --- LOGICA MICROFONO (Richiesta Unica) ---
+         function initRecognition() {
+            const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!Speech) return alert("Browser non supportato");
+
+            recognition = new Speech();
+            recognition.lang = 'it-IT';
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            recognition.onstart = () => {
+                console.log("Microfono acceso correttamente");
+            };
+
+            recognition.onresult = (e) => {
+                const cmd = e.results[0][0].transcript.toLowerCase();
+                document.getElementById('transcript').textContent = cmd;
+                processCommand(cmd);
+            };
+
+            recognition.onerror = (e) => {
+                console.error("Errore riconoscimento:", e.error);
+                // Se l'errore è dovuto al fatto che l'utente sta ancora decidendo nel pop-up, non resettare tutto
+                if (e.error !== 'not-allowed') {
+                    resetUI();
+                }
+            };
+
+            recognition.onend = () => {
+                // Resettiamo l'interfaccia solo dopo che il riconoscimento è finito davvero
+                resetUI();
+            };
+        }
+	
+		function resetUI() {
+            document.getElementById('unit').className = 'banker-unit';
+            document.querySelectorAll('.player-btn').forEach(b => b.classList.remove('active-focus'));
+            document.getElementById('status-text').textContent = "Pronto";
+            activeActor = null;
+        }
+		
+        // --- GESTIONE PARTITA ---
+        function togglePlayer(color, el) {
+            if (selectedColors.includes(color)) {
+                selectedColors = selectedColors.filter(c => c !== color);
+                el.classList.remove('selected');
+            } else {
+                selectedColors.push(color);
+                el.classList.add('selected');
+            }
+        }
+
+       function startGame() {
+            if (selectedColors.length < 2) return alert("Seleziona almeno 2 giocatori!");
+            
+            // 1. Inizializza il sistema
+            initRecognition();
+            
+            // 2. TRUCCO: Chiedi subito il permesso al microfono
+            // Avviamo e fermiamo subito per far apparire il pop-up ORA, non durante il gioco
+            recognition.start();
+            setTimeout(() => recognition.stop(), 100); 
+
+            selectedColors.forEach(color => {
+                gameState.players[color] = { balance: 15000000 };
+                document.getElementById(`card-${color}`).classList.add('active');
+            });
+
+            ['blu', 'giallo', 'rosso', 'verde'].forEach(c => {
+                if(!selectedColors.includes(c)) document.getElementById(`btn-${c}`).style.display = 'none';
+            });
+
+            document.getElementById('setup-overlay').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('setup-overlay').style.display = 'none';
+                speak("Benvenuti. Permesso microfono richiesto. Clicca il tuo colore per giocare.");
+            }, 800);
+        }
+
+      function activate(color) {
+            if (activeActor) return; // Evita clic multipli mentre ascolta
+            
+            activeActor = color;
+            
+            // Animazione grafica
+            document.querySelectorAll('.player-btn').forEach(b => b.classList.remove('active-focus'));
+            document.getElementById(`btn-${color}`).classList.add('active-focus');
+            document.getElementById('unit').className = `banker-unit listening-${color}`;
+            document.getElementById('status-text').textContent = "Ti ascolto...";
+            document.getElementById('transcript').textContent = "";
+            
+            // Avvio riconoscimento
+            try {
+                recognition.start();
+            } catch(e) {
+                console.log("Riconoscimento già attivo o in fase di avvio");
+            }
+        }
+		
+        function processCommand(msg) {
+            if (msg.includes("Passa")) {
+                updateBalance(activeActor, 2000000);
+                speak("Passato dal via. Hai ricevuto 2 milioni.");
+            } 
+            else if (msg.includes("acquista") || msg.includes("compra")) {
+                let found = false;
+                for (let p in gameState.properties) {
+                    if (msg.includes(p)) {
+                        let cost = gameState.properties[p].price;
+                        if(gameState.players[activeActor].balance >= cost) {
+                            updateBalance(activeActor, -cost);
+                            gameState.properties[p].owner = activeActor;
+                            speak(`Acquisto confermato: ${p}.`);
+                        } else { speak("Non hai abbastanza denaro perro de ostrega."); }
+                        found = true; break;
+                    }
+                }
+                if(!found) speak("Non ho trovato questa proprietà.");
+            }
+            else if (msg.includes("paga") || msg.includes("versa")) {
+                let amount = parseMoney(msg);
+                if(amount > 0) {
+                    updateBalance(activeActor, -amount);
+                    speak(`Pagamento di ${formatMoney(amount)} effettuato.`);
+                }
+            }
+            else if (msg.includes("incassa")) {
+                let amount = parseMoney(msg);
+                if(amount > 0) {
+                    updateBalance(activeActor, amount);
+                    speak(`Hai incassato ${formatMoney(amount)}.`);
+                }
+            }
+            else { speak("Non ho capito, puoi ripetere?"); }
+        }
+
+        function updateBalance(player, amount) {
+            gameState.players[player].balance += amount;
+            document.getElementById(`bal-${player}`).textContent = formatMoney(gameState.players[player].balance);
+        }
+
+        function formatMoney(n) {
+            if(n >= 1000000) return (n / 1000000).toFixed(1) + "M";
+            return (n / 1000).toFixed(0) + "K";
+        }
+
+        function parseMoney(text) {
+            let num = text.match(/\d+/);
+            if (!num) return 0;
+            let val = parseInt(num[0]);
+            if (text.includes("milion")) return val * 1000000;
+            if (text.includes("mila")) return val * 1000;
+            return val;
+        }
+    </script>
+</body>
+</html>
