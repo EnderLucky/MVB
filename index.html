@@ -173,7 +173,7 @@
         <div id="card-verde" class="balance-card" style="border-color:var(--verde)"><span>VERDE</span><span class="money" id="bal-verde">15.0M</span></div>
     </div>
 
-    <script>
+ <script>
         let gameState = {
             players: {},
             properties: {
@@ -181,39 +181,27 @@
                 "vicolo stretto": { price: 600000, rent: 150000, owner: null },
                 "via roma": { price: 3000000, rent: 750000, owner: null },
                 "parco della vittoria": { price: 4000000, rent: 1500000, owner: null }
-                
             }
         };
 
         let selectedColors = [];
         let activeActor = null;
         let recognition;
-        let bestVoice = null;
+        let isListening = false; // Variabile di controllo
 
-        // --- INIZIALIZZAZIONE VOCE MIGLIORE ---
-        function loadVoices() {
-            const voices = window.speechSynthesis.getVoices();
-            // Cerchiamo Google Italiano o Microsoft Elsa (voci naturali online)
-            bestVoice = voices.find(v => v.name.includes("Google") && v.lang.startsWith("it")) || 
-                        voices.find(v => v.name.includes("Online") && v.lang.startsWith("it")) ||
-                        voices.find(v => v.lang.startsWith("it"));
-        }
-        window.speechSynthesis.onvoiceschanged = loadVoices;
-
+        // --- VOCE MIGLIORATA ---
         function speak(text) {
-            window.speechSynthesis.cancel(); // Ferma voci precedenti
+            window.speechSynthesis.cancel();
             const utter = new SpeechSynthesisUtterance(text);
-            if (bestVoice) utter.voice = bestVoice;
             utter.lang = 'it-IT';
-            utter.pitch = 1.0;
-            utter.rate = 1.0;
+            utter.rate = 1.1; 
             window.speechSynthesis.speak(utter);
         }
 
-        // --- LOGICA MICROFONO (Richiesta Unica) ---
-         function initRecognition() {
+        // --- MICROFONO RINFORZATO ---
+        function initRecognition() {
             const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!Speech) return alert("Browser non supportato");
+            if (!Speech) return;
 
             recognition = new Speech();
             recognition.lang = 'it-IT';
@@ -221,7 +209,8 @@
             recognition.interimResults = false;
 
             recognition.onstart = () => {
-                console.log("Microfono acceso correttamente");
+                isListening = true;
+                console.log("Microfono attivo...");
             };
 
             recognition.onresult = (e) => {
@@ -231,27 +220,30 @@
             };
 
             recognition.onerror = (e) => {
-                console.error("Errore riconoscimento:", e.error);
-                // Se l'errore è dovuto al fatto che l'utente sta ancora decidendo nel pop-up, non resettare tutto
-                if (e.error !== 'not-allowed') {
-                    resetUI();
+                console.log("Errore microfono:", e.error);
+                if(e.error === 'no-speech') {
+                    document.getElementById('transcript').textContent = "Non ho sentito...";
                 }
             };
 
             recognition.onend = () => {
-                // Resettiamo l'interfaccia solo dopo che il riconoscimento è finito davvero
-                resetUI();
+                isListening = false;
+                // Aspettiamo un secondo prima di rimpicciolire il pulsante
+                // così hai tempo di vedere cosa è successo
+                setTimeout(() => {
+                    if (!isListening) resetUI();
+                }, 1000);
             };
         }
-	
-		function resetUI() {
+
+        function resetUI() {
             document.getElementById('unit').className = 'banker-unit';
             document.querySelectorAll('.player-btn').forEach(b => b.classList.remove('active-focus'));
             document.getElementById('status-text').textContent = "Pronto";
             activeActor = null;
         }
-		
-        // --- GESTIONE PARTITA ---
+
+        // --- GESTIONE GIOCO ---
         function togglePlayer(color, el) {
             if (selectedColors.includes(color)) {
                 selectedColors = selectedColors.filter(c => c !== color);
@@ -262,17 +254,11 @@
             }
         }
 
-       function startGame() {
-            if (selectedColors.length < 2) return alert("Seleziona almeno 2 giocatori!");
+        function startGame() {
+            if (selectedColors.length < 2) return alert("Seleziona i giocatori!");
             
-            // 1. Inizializza il sistema
             initRecognition();
             
-            // 2. TRUCCO: Chiedi subito il permesso al microfono
-            // Avviamo e fermiamo subito per far apparire il pop-up ORA, non durante il gioco
-            recognition.start();
-            setTimeout(() => recognition.stop(), 100); 
-
             selectedColors.forEach(color => {
                 gameState.players[color] = { balance: 15000000 };
                 document.getElementById(`card-${color}`).classList.add('active');
@@ -285,36 +271,34 @@
             document.getElementById('setup-overlay').style.opacity = '0';
             setTimeout(() => {
                 document.getElementById('setup-overlay').style.display = 'none';
-                speak("Benvenuti. Permesso microfono richiesto. Clicca il tuo colore per giocare.");
+                speak("Banchiere attivo. Clicca il tuo colore e parla dopo il segnale.");
             }, 800);
         }
 
-      function activate(color) {
-            if (activeActor) return; // Evita clic multipli mentre ascolta
+        function activate(color) {
+            if (isListening) return; // Non interrompere se sta già ascoltando
             
             activeActor = color;
             
-            // Animazione grafica
-            document.querySelectorAll('.player-btn').forEach(b => b.classList.remove('active-focus'));
+            // 1. EFFETTO GRAFICO IMMEDIATO
             document.getElementById(`btn-${color}`).classList.add('active-focus');
             document.getElementById('unit').className = `banker-unit listening-${color}`;
-            document.getElementById('status-text').textContent = "Ti ascolto...";
-            document.getElementById('transcript').textContent = "";
-            
-            // Avvio riconoscimento
+            document.getElementById('status-text').textContent = "TI ASCOLTO...";
+            document.getElementById('transcript').textContent = "Parla ora";
+
+            // 2. AVVIO MICROFONO
             try {
                 recognition.start();
             } catch(e) {
-                console.log("Riconoscimento già attivo o in fase di avvio");
+                console.log("Riconoscimento già in corso");
             }
         }
-		
+
         function processCommand(msg) {
-            if (msg.includes("Passa")) {
+            if (msg.includes("via")) {
                 updateBalance(activeActor, 2000000);
                 speak("Passato dal via. Hai ricevuto 2 milioni.");
-            } 
-            else if (msg.includes("acquista") || msg.includes("compra")) {
+            } else if (msg.includes("acquista") || msg.includes("compra")) {
                 let found = false;
                 for (let p in gameState.properties) {
                     if (msg.includes(p)) {
@@ -323,27 +307,26 @@
                             updateBalance(activeActor, -cost);
                             gameState.properties[p].owner = activeActor;
                             speak(`Acquisto confermato: ${p}.`);
-                        } else { speak("Non hai abbastanza denaro perro de ostrega."); }
+                        } else { speak("Non hai abbastanza soldi."); }
                         found = true; break;
                     }
                 }
-                if(!found) speak("Non ho trovato questa proprietà.");
-            }
-            else if (msg.includes("paga") || msg.includes("versa")) {
+                if(!found) speak("Proprietà non trovata.");
+            } else if (msg.includes("paga") || msg.includes("versa")) {
                 let amount = parseMoney(msg);
                 if(amount > 0) {
                     updateBalance(activeActor, -amount);
-                    speak(`Pagamento di ${formatMoney(amount)} effettuato.`);
+                    speak(`Pagati ${formatMoney(amount)}.`);
                 }
-            }
-            else if (msg.includes("incassa")) {
+            } else if (msg.includes("incassa")) {
                 let amount = parseMoney(msg);
                 if(amount > 0) {
                     updateBalance(activeActor, amount);
-                    speak(`Hai incassato ${formatMoney(amount)}.`);
+                    speak(`Incassati ${formatMoney(amount)}.`);
                 }
+            } else {
+                speak("Non ho capito, riprova.");
             }
-            else { speak("Non ho capito, puoi ripetere?"); }
         }
 
         function updateBalance(player, amount) {
@@ -352,8 +335,7 @@
         }
 
         function formatMoney(n) {
-            if(n >= 1000000) return (n / 1000000).toFixed(1) + "M";
-            return (n / 1000).toFixed(0) + "K";
+            return (n / 1000000).toFixed(1) + "M";
         }
 
         function parseMoney(text) {
@@ -366,4 +348,5 @@
         }
     </script>
 </body>
+
 </html>
