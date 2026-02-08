@@ -295,7 +295,7 @@
         }
 
         function processCommand(msg) {
-            if (msg.includes("via")) {
+            if (msg.includes("Passa dal Via")) {
                 updateBalance(activeActor, 2000000);
                 speak("Passato dal via. Hai ricevuto 2 milioni.");
             } else if (msg.includes("acquista") || msg.includes("compra")) {
@@ -350,3 +350,4 @@
 </body>
 
 </html>
+
