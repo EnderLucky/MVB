@@ -1,20 +1,26 @@
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monopoly Voice Banking - Pro Edition</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Monopoly Voice Banking - Commentato</title>
     <style>
+        /* DEFINIZIONE VARIABILI COLORE (I colori ufficiali dei giocatori) */
         :root {
             --bg-color: #050505;
             --unit-bg: #151515;
-            --blu: #007bff; --giallo: #ffcc00; --rosso: #ff4d4d; --verde: #2ecc71;
+            --blu: #007bff;
+            --giallo: #ffcc00;
+            --rosso: #ff4d4d;
+            --verde: #2ecc71;
         }
 
+        /* RESET E STILE BASE DEL CORPO PAGINA */
         body {
             background-color: var(--bg-color);
             color: white;
-            font-family: 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
             display: flex;
             flex-direction: column;
@@ -22,9 +28,11 @@
             justify-content: center;
             height: 100vh;
             overflow: hidden;
+            touch-action: manipulation;
+            /* Evita lo zoom fastidioso su mobile */
         }
 
-        /* Schermata Iniziale */
+        /* SCHERMATA DI SELEZIONE GIOCATORI (Inizialmente copre tutto) */
         #setup-overlay {
             position: fixed;
             inset: 0;
@@ -39,36 +47,41 @@
 
         .setup-card {
             background: #111;
-            padding: 40px;
-            border-radius: 40px;
+            padding: 30px;
+            border-radius: 30px;
             border: 1px solid #333;
             text-align: center;
+            max-width: 90%;
         }
 
         .color-selector {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin: 30px 0;
+            gap: 15px;
+            margin: 25px 0;
         }
 
+        /* I PULSANTI ROTONDI NEL SETUP */
         .chip {
-            padding: 25px;
-            border-radius: 20px;
+            padding: 20px;
+            border-radius: 15px;
             cursor: pointer;
             font-weight: bold;
-            border: 5px solid transparent;
-            transition: 0.3s;
-            font-size: 1.2rem;
+            border: 4px solid transparent;
+            transition: 0.2s;
+            text-transform: uppercase;
         }
 
-        .chip.selected { border-color: white; transform: scale(1.05); }
+        .chip.selected {
+            border-color: white;
+            transform: scale(1.05);
+        }
 
-        /* Unità Centrale */
+        /* IL "CERCHIO" CENTRALE DEL DISPOSITIVO */
         .banker-wrapper {
             position: relative;
-            width: 420px;
-            height: 420px;
+            width: 320px;
+            height: 320px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -76,77 +89,202 @@
 
         .banker-unit {
             position: relative;
-            width: 320px;
-            height: 320px;
+            width: 240px;
+            height: 240px;
             background: var(--unit-bg);
             border-radius: 50%;
-            border: 10px solid #222;
+            border: 8px solid #222;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             z-index: 5;
-            box-shadow: inset 0 0 50px #000;
+            box-shadow: inset 0 0 40px #000;
+            text-align: center;
+            cursor: pointer;
         }
 
-        /* Luci Giocatori */
-        .listening-blu { border-color: var(--blu) !important; box-shadow: 0 0 60px var(--blu), inset 0 0 30px var(--blu); }
-        .listening-giallo { border-color: var(--giallo) !important; box-shadow: 0 0 60px var(--giallo), inset 0 0 30px var(--giallo); }
-        .listening-rosso { border-color: var(--rosso) !important; box-shadow: 0 0 60px var(--rosso), inset 0 0 30px var(--rosso); }
-        .listening-verde { border-color: var(--verde) !important; box-shadow: 0 0 60px var(--verde), inset 0 0 30px var(--verde); }
+        /* EFFETTI LUCE QUANDO IL BANCHIERE ASCOLTA UN GIOCATORE */
+        .listening-blu {
+            border-color: var(--blu) !important;
+            box-shadow: 0 0 50px var(--blu), inset 0 0 20px var(--blu);
+        }
 
-        #status-text { color: #555; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 5px; }
-        #transcript { font-size: 1.5rem; font-weight: bold; text-align: center; padding: 0 30px; min-height: 3rem; display: flex; align-items: center; }
+        .listening-giallo {
+            border-color: var(--giallo) !important;
+            box-shadow: 0 0 50px var(--giallo), inset 0 0 20px var(--giallo);
+        }
 
-        /* Pulsanti Giocatori */
+        .listening-rosso {
+            border-color: var(--rosso) !important;
+            box-shadow: 0 0 50px var(--rosso), inset 0 0 20px var(--rosso);
+        }
+
+        .listening-verde {
+            border-color: var(--verde) !important;
+            box-shadow: 0 0 50px var(--verde), inset 0 0 20px var(--verde);
+        }
+
+        /* TESTI DENTRO L'UNITÀ CENTRALE */
+        #status-text {
+            color: #555;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+        }
+
+        #transcript {
+            font-size: 0.9rem;
+            font-weight: bold;
+            padding: 0 20px;
+            min-height: 2.5rem;
+            color: #fff;
+            text-transform: uppercase;
+        }
+
+        /* PULSANTI DEI GIOCATORI SUL PERIMETRO */
         .player-btn {
             position: absolute;
-            width: 85px;
-            height: 85px;
+            width: 70px;
+            height: 70px;
             border-radius: 50%;
             cursor: pointer;
             transition: 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
             z-index: 10;
-            border: 5px solid rgba(0,0,0,0.4);
+            border: 4px solid rgba(0, 0, 0, 0.3);
         }
 
-        .btn-blu { top: 0; left: 50%; transform: translateX(-50%); background: var(--blu); }
-        .btn-giallo { bottom: 0; left: 50%; transform: translateX(-50%); background: var(--giallo); }
-        .btn-rosso { left: 0; top: 50%; transform: translateY(-50%); background: var(--rosso); }
-        .btn-verde { right: 0; top: 50%; transform: translateY(-50%); background: var(--verde); }
+        /* POSIZIONAMENTO DEI PULSANTI (Nord, Sud, Ovest, Est) */
+        .btn-blu {
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--blu);
+        }
 
+        .btn-giallo {
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--giallo);
+        }
+
+        .btn-rosso {
+            left: -10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--rosso);
+        }
+
+        .btn-verde {
+            right: -10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--verde);
+        }
+
+        /* EFFETTO QUANDO CLICCHI UN GIOCATORE (Si sposta al centro e si ingrandisce) */
         .player-btn.active-focus {
-            top: 50% !important; left: 50% !important;
+            top: 50% !important;
+            left: 50% !important;
             transform: translate(-50%, -50%) scale(1.6) !important;
             z-index: 100;
-            box-shadow: 0 0 50px rgba(255,255,255,0.4);
+            box-shadow: 0 0 40px rgba(255, 255, 255, 0.4);
         }
 
-        /* Dashbord Saldi */
-        #balances { margin-top: 50px; display: flex; gap: 15px; }
-        .balance-card {
-            background: #111; padding: 15px 20px; border-radius: 15px;
-            text-align: center; display: none; border-bottom: 5px solid transparent;
+        /* TABELLA SALDI IN BASSO */
+        #balances {
+            margin-top: 60px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
         }
-        .balance-card.active { display: block; }
-        .money { font-size: 1.3rem; font-weight: bold; display: block; }
+
+        .balance-card {
+            background: #111;
+            padding: 10px;
+            border-radius: 12px;
+            text-align: center;
+            display: none;
+            border-bottom: 4px solid transparent;
+            min-width: 95px;
+        }
+
+        .balance-card.active {
+            display: block;
+        }
+
+        .balance-card.bancarotta {
+            opacity: 0.4;
+            text-decoration: line-through;
+            border-color: #666 !important;
+        }
+
+        .balance-card.bancarotta .money {
+            color: #666;
+        }
+
+        /* CONSOLE PER COMANDI SCRITTI (Debug/Manuale) */
+        #debug-console {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            padding: 20px;
+            border-radius: 20px;
+            border: 2px solid #444;
+            z-index: 200;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        #debug-input {
+            background: #222;
+            border: 1px solid #444;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            width: 220px;
+        }
+
+        #debug-btn {
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 8px;
+            font-weight: bold;
+        }
 
         button#start-btn {
-            background: white; color: black; border: none; padding: 18px 50px;
-            border-radius: 40px; font-weight: bold; font-size: 1.2rem; cursor: pointer;
+            background: white;
+            color: black;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
         }
     </style>
 </head>
+
 <body>
 
+    <!-- UI: SETUP INIZIALE -->
     <div id="setup-overlay">
         <div class="setup-card">
             <h1>VOICE BANKING</h1>
-            <p>Seleziona i partecipanti</p>
+            <p style="color:#888">Seleziona i giocatori</p>
             <div class="color-selector">
                 <div class="chip" style="background:var(--blu)" onclick="togglePlayer('blu', this)">BLU</div>
-                <div class="chip" style="background:var(--giallo); color:black" onclick="togglePlayer('giallo', this)">GIALLO</div>
+                <div class="chip" style="background:var(--giallo); color:black" onclick="togglePlayer('giallo', this)">
+                    GIALLO</div>
                 <div class="chip" style="background:var(--rosso)" onclick="togglePlayer('rosso', this)">ROSSO</div>
                 <div class="chip" style="background:var(--verde)" onclick="togglePlayer('verde', this)">VERDE</div>
             </div>
@@ -154,88 +292,284 @@
         </div>
     </div>
 
+    <!-- UI: CONSOLE NASCOSTA -->
+    <div id="debug-console">
+        <div style="font-size: 0.8rem; color: #aaa; text-align:center">COMANDO TESTUALE</div>
+        <input type="text" id="debug-input" placeholder="Scrivi qui...">
+        <button id="debug-btn" onclick="sendManualCommand()">ESEGUI</button>
+    </div>
+
+    <!-- UI: UNITÀ BANCHIERE -->
     <div class="banker-wrapper">
         <div class="banker-unit" id="unit">
             <div id="status-text">Pronto</div>
-            <div id="transcript">Tocca il tuo colore</div>
+            <div id="transcript">Tocca un colore</div>
         </div>
-
+        <!-- Pulsanti Giocatori -->
         <div id="btn-blu" class="player-btn btn-blu" onclick="activate('blu')"></div>
         <div id="btn-giallo" class="player-btn btn-giallo" onclick="activate('giallo')"></div>
         <div id="btn-rosso" class="player-btn btn-rosso" onclick="activate('rosso')"></div>
         <div id="btn-verde" class="player-btn btn-verde" onclick="activate('verde')"></div>
     </div>
 
+    <!-- UI: VISUALIZZAZIONE SALDI -->
     <div id="balances">
-        <div id="card-blu" class="balance-card" style="border-color:var(--blu)"><span>BLU</span><span class="money" id="bal-blu">15.0M</span></div>
-        <div id="card-giallo" class="balance-card" style="border-color:var(--giallo)"><span>GIALLO</span><span class="money" id="bal-giallo">15.0M</span></div>
-        <div id="card-rosso" class="balance-card" style="border-color:var(--rosso)"><span>ROSSO</span><span class="money" id="bal-rosso">15.0M</span></div>
-        <div id="card-verde" class="balance-card" style="border-color:var(--verde)"><span>VERDE</span><span class="money" id="bal-verde">15.0M</span></div>
+        <div id="card-blu" class="balance-card" style="border-color:var(--blu)"><span>BLU</span> <span class="money"
+                id="bal-blu">15 milioni</span></div>
+        <div id="card-giallo" class="balance-card" style="border-color:var(--giallo)"><span>GIALLO</span> <span
+                class="money" id="bal-giallo">15 milioni</span></div>
+        <div id="card-rosso" class="balance-card" style="border-color:var(--rosso)"><span>ROSSO</span> <span
+                class="money" id="bal-rosso">15 milioni</span></div>
+        <div id="card-verde" class="balance-card" style="border-color:var(--verde)"><span>VERDE</span> <span
+                class="money" id="bal-verde">15 milioni</span></div>
     </div>
 
- <script>
+    <script>
+        // --- DATABASE DEL GIOCO (Stato di proprietà, case, affitti) ---
         let gameState = {
-            players: {},
+            players: {}, // Qui verranno salvati i saldi dei giocatori attivi
+            bankruptPlayers: [], // Giocatori in bancarotta (esclusi dal gioco)
             properties: {
-                "vicolo corto": { price: 600000, rent: 100000, owner: null },
-                "vicolo stretto": { price: 600000, rent: 150000, owner: null },
-                "via roma": { price: 3000000, rent: 750000, owner: null },
-                "parco della vittoria": { price: 4000000, rent: 1500000, owner: null }
+                "vicolo corto": { set: "marrone", price: 600000, buildCost: 500000, rents: [20000, 100000, 300000, 900000, 1600000, 2500000], owner: null, houses: 0, mortgaged: false },
+                "vicolo stretto": { set: "marrone", price: 600000, buildCost: 500000, rents: [40000, 200000, 600000, 1800000, 3200000, 4500000], owner: null, houses: 0, mortgaged: false },
+                "bastioni gran sasso": { set: "azzurro", price: 1000000, buildCost: 500000, rents: [60000, 300000, 900000, 2700000, 4000000, 5500000], owner: null, houses: 0, mortgaged: false },
+                "viale monterosa": { set: "azzurro", price: 1000000, buildCost: 500000, rents: [60000, 300000, 900000, 2700000, 4000000, 5500000], owner: null, houses: 0, mortgaged: false },
+                "viale vesuvio": { set: "azzurro", price: 1200000, buildCost: 500000, rents: [80000, 400000, 1000000, 3000000, 4500000, 6000000], owner: null, houses: 0, mortgaged: false },
+                "via accademia": { set: "rosa", price: 1400000, buildCost: 1000000, rents: [100000, 500000, 1500000, 4500000, 6250000, 7500000], owner: null, houses: 0, mortgaged: false },
+                "corso ateneo": { set: "rosa", price: 1400000, buildCost: 1000000, rents: [100000, 500000, 1500000, 4500000, 6250000, 7500000], owner: null, houses: 0, mortgaged: false },
+                "piazza università": { set: "rosa", price: 1600000, buildCost: 1000000, rents: [120000, 600000, 1800000, 5000000, 7000000, 9000000], owner: null, houses: 0, mortgaged: false },
+                "via verdi": { set: "arancio", price: 1800000, buildCost: 1000000, rents: [140000, 700000, 2000000, 5500000, 7500000, 9500000], owner: null, houses: 0, mortgaged: false },
+                "corso raffaello": { set: "arancio", price: 1800000, buildCost: 1000000, rents: [140000, 700000, 2000000, 5500000, 7500000, 9500000], owner: null, houses: 0, mortgaged: false },
+                "viale dante": { set: "arancio", price: 2000000, buildCost: 1000000, rents: [160000, 800000, 2200000, 6000000, 8000000, 10000000], owner: null, houses: 0, mortgaged: false },
+                "via marco polo": { set: "rosso", price: 2200000, buildCost: 1500000, rents: [180000, 900000, 2500000, 7000000, 8750000, 10500000], owner: null, houses: 0, mortgaged: false },
+                "corso margellano": { set: "rosso", price: 2200000, buildCost: 1500000, rents: [180000, 900000, 2500000, 7000000, 8750000, 10500000], owner: null, houses: 0, mortgaged: false },
+                "largo colombo": { set: "rosso", price: 2400000, buildCost: 1500000, rents: [200000, 1000000, 3000000, 7500000, 9250000, 11000000], owner: null, houses: 0, mortgaged: false },
+                "viale costantino": { set: "giallo", price: 2600000, buildCost: 1500000, rents: [220000, 1100000, 3300000, 8000000, 9750000, 11500000], owner: null, houses: 0, mortgaged: false },
+                "viale traiano": { set: "giallo", price: 2600000, buildCost: 1500000, rents: [220000, 1100000, 3300000, 8000000, 9750000, 11500000], owner: null, houses: 0, mortgaged: false },
+                "piazza giulio cesare": { set: "giallo", price: 2800000, buildCost: 1500000, rents: [240000, 1200000, 3600000, 8500000, 10250000, 12000000], owner: null, houses: 0, mortgaged: false },
+                "via roma": { set: "verde", price: 3000000, buildCost: 2000000, rents: [260000, 1300000, 3900000, 9000000, 11000000, 12750000], owner: null, houses: 0, mortgaged: false },
+                "corso impero": { set: "verde", price: 3000000, buildCost: 2000000, rents: [260000, 1300000, 3900000, 9000000, 11000000, 12750000], owner: null, houses: 0, mortgaged: false },
+                "largo augusto": { set: "verde", price: 3200000, buildCost: 2000000, rents: [280000, 1500000, 4500000, 10000000, 12000000, 14000000], owner: null, houses: 0, mortgaged: false },
+                "viale dei giardini": { set: "blu", price: 3500000, buildCost: 2000000, rents: [350000, 1750000, 5000000, 11000000, 13000000, 15000000], owner: null, houses: 0, mortgaged: false },
+                "parco della vittoria": { set: "blu", price: 4000000, buildCost: 2000000, rents: [500000, 2000000, 6000000, 14000000, 17000000, 20000000], owner: null, houses: 0, mortgaged: false },
+                "stazione nord": { set: "stazione", price: 2000000, owner: null, mortgaged: false },
+                "stazione sud": { set: "stazione", price: 2000000, owner: null, mortgaged: false },
+                "stazione est": { set: "stazione", price: 2000000, owner: null, mortgaged: false },
+                "stazione ovest": { set: "stazione", price: 2000000, owner: null, mortgaged: false },
+                "società elettrica": { set: "società", price: 1500000, owner: null, mortgaged: false },
+                "società dell'acqua potabile": { set: "società", price: 1500000, owner: null, mortgaged: false }
             }
         };
 
-        let selectedColors = [];
-        let activeActor = null;
-        let recognition;
-        let isListening = false; // Variabile di controllo
+        // --- DATABASE CARTE IMPREVISTI (senza tracciamento carte speciali) ---
+        const imprevisti = [
+            {
+                text: "Carta imprevisti: Andate fino al Via ed incassate 2000000!",
+                effect: () => {
+                    updateBalance(activeActor, 2000000);
+                }
+            },
+            {
+                text: "Carta imprevisti: Hai riparato le tue case: paga 600000 per ogni casa e 1200000 per ogni albergo!",
+                effect: () => {
+                    const { houses, hotels } = countPlayerBuildings(activeActor);
+                    const total = houses * 600000 + hotels * 1200000;
+                    updateBalance(activeActor, -total);
+                }
+            },
+            {
+                text: "Carta imprevisti: Errore della banca a tuo favore: ritira 2000000!",
+                effect: () => {
+                    updateBalance(activeActor, 2000000);
+                }
+            },
+            {
+                text: "Carta imprevisti: Fai 3 passi indietro",
+            },
+            {
+                text: "Carta imprevisti: Fai 9 passi indietro",
+            },
+            {
+                text: "Carta imprevisti: Vai fino a via Accademia, fammi sapere se passi dal via!",
+            },
+            {
+                text: "Carta imprevisti: Vai fino al parco della vittoria!",
+            },
+            {
+                text: "Carta imprevisti: Vai fino alla società più vicina! Fammi sapere se passi dal via! Se appartiene a qualcun altro, paga 10000 volte il valore dei dadi!",
+            },
+            {
+                text: "Carta imprevisti: Vai fino alla stazione più vicina! Fammi sapere se passi dal via! Se appartiene a qualcun altro, paga il doppio dell'affitto!",
+            },
+            {
+                text: "Carta imprevisti: Sei diventato molto popolare, il sindaco ti ha dato una carta esci gratis di prigione! Tienila per il futuro o scambiala con qualcuno!",
+            },
+            {
+                text: "Carta imprevisti: Mi piace il tuo stile! prendi una carta esci gratis di prigione! Tienila per il futuro o scambiala con qualcuno!",
+            },
+            {
+                text: "Carta imprevisti: Hai usato un'app per usare il Monopoly senza licenza di Habro? Vai dritto in prigione senza passare dal Via!",
 
-        // --- VOCE MIGLIORATA ---
+            },
+            {
+                text: "Carta imprevisti: Mi hai insultato su Monopoly Voice Banking? Vai dritto in prigione e vergognati!",
+
+            },
+            {
+                text: "Carta imprevisti: Buon compleanno! Ricevete 250000 da ogni giocatore.",
+                effect: () => {
+                    const otherPlayers = selectedColors.filter(c =>
+                        c !== activeActor && !gameState.bankruptPlayers.includes(c)
+                    );
+                    let totalReceived = 0;
+                    for (const player of otherPlayers) {
+                        const amount = Math.min(250000, gameState.players[player].balance);
+                        updateBalance(player, -amount);
+                        totalReceived += amount;
+                    }
+                    updateBalance(activeActor, totalReceived);
+                }
+            },
+            {
+                text: "Carta imprevisti: È arrivato il rimborso delle tasse: incassate 500000.",
+                effect: () => {
+                    updateBalance(activeActor, 500000);
+                }
+            },
+            {
+                text: "Carta imprevisti: Scade l'assicurazione sulla vita: incassate 1000000.",
+                effect: () => {
+                    updateBalance(activeActor, 1000000);
+                }
+            },
+            {
+                text: "Carta imprevisti: Sembra tu abbia mal di gola, ti ho fissato un appuntamento dal dottore, purtroppo la sanità pubblica non vi accetta prima del 2054, pagate 1000000.",
+                effect: () => {
+                    updateBalance(activeActor, -1000000);
+                }
+            },
+            {
+                text: "Carta imprevisti: Avete fatto il corso per ambienti in spazi confinati? Tutti gli imprenditori l'hanno fatto, come potresti vivere senza! l'iscrizione costa 1500000.",
+                effect: () => {
+
+                    updateBalance(activeActor, -1500000);
+                }
+            },
+            {
+                text: "Carta imprevisti: Dovresti farti doppiare da un altro giocatore, pago ogni giocatore 250000",
+                effect: () => {
+                    const recipients = selectedColors.filter(c =>
+                        c !== activeActor && !gameState.bankruptPlayers.includes(c)
+                    );
+                    const totalRequired = recipients.length * 250000;
+                    for (const recipient of recipients) {
+                        updateBalance(activeActor, -250000);
+                        updateBalance(recipient, 250000);
+                    }
+                }
+            },
+            {
+                text: "Carta imprevisti: Ricevete una consulenza: incassate 500000.",
+                effect: () => {
+                    updateBalance(activeActor, 500000);
+                }
+            },
+            {
+                text: "Carta imprevisti: Avete pagato il notaio per gli edifici costruiti? pagate subito 500000 per ogni casa e 1000000 per ogni albergo.",
+                effect: () => {
+                    const { houses, hotels } = countPlayerBuildings(activeActor);
+                    const total = houses * 500000 + hotels * 1000000;
+                    updateBalance(activeActor, -total);
+                }
+            },
+            {
+                text: "Carta imprevisti: Avete vinto un premio di bellezza: incassate 100000.",
+                effect: () => {
+                    updateBalance(activeActor, 100000);
+                }
+            },
+            {
+                text: "Carta imprevisti: Ereditate 1M.",
+                effect: () => {
+                    updateBalance(activeActor, 1000000);
+                }
+            },
+            // --- NUOVE CARTE IMPREVISTI DIVERTENTI E BILANCIATE ---
+            {
+                text: "Carta imprevisti: Hai vinto la lotteria nazionale! Incassa 3000000.",
+                effect: () => {
+                    updateBalance(activeActor, 3000000);
+                }
+            },
+            {
+                text: "Carta imprevisti: Hai dato da mangiare al gatto? Vai a farlo subito! Salta il tuo prossimo turno.",
+            },
+            {
+                text: "Carta imprevisti: Sei stato eletto sindaco per un giorno! Ogni giocatore ti paga 100000.",
+                effect: () => {
+                    const otherPlayers = selectedColors.filter(c =>
+                        c !== activeActor && !gameState.bankruptPlayers.includes(c)
+                    );
+                    let totalReceived = 0;
+                    for (const player of otherPlayers) {
+                        const amount = Math.min(100000, gameState.players[player].balance);
+                        updateBalance(player, -amount);
+                        totalReceived += amount;
+                    }
+                    updateBalance(activeActor, totalReceived);
+                }
+            },
+            {
+                text: "Carta imprevisti: Hai investito in criptovalute e hai perso tutto! Perdi 1500000.",
+                effect: () => {
+                    if (gameState.players[activeActor].balance < 1500000) {
+                        return;
+                    }
+                    updateBalance(activeActor, -1500000);
+                }
+            }
+        ];
+
+        // VARIABILI GLOBALI PER IL FUNZIONAMENTO
+        let selectedColors = []; // Giocatori scelti nel setup
+        let activeActor = null; // Il giocatore che ha premuto il pulsante e sta parlando
+        let recognition; // L'oggetto per il riconoscimento vocale
+        let isListening = false; // Stato del microfono
+        let tapCount = 0; // Contatore per i 3 tocchi segreti
+        let tapTimer;
+
+        // FUNZIONE PER FAR PARLARE IL BANCHIERE
         function speak(text) {
-            window.speechSynthesis.cancel();
+            window.speechSynthesis.cancel(); // Interrompe frasi precedenti
             const utter = new SpeechSynthesisUtterance(text);
             utter.lang = 'it-IT';
-            utter.rate = 1.1; 
             window.speechSynthesis.speak(utter);
         }
 
-        // --- MICROFONO RINFORZATO ---
+        // INIZIALIZZAZIONE DEL MICROFONO
         function initRecognition() {
             const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!Speech) return;
-
             recognition = new Speech();
             recognition.lang = 'it-IT';
-            recognition.continuous = false;
-            recognition.interimResults = false;
 
-            recognition.onstart = () => {
-                isListening = true;
-                console.log("Microfono attivo...");
-            };
+            recognition.onstart = () => { isListening = true; };
 
             recognition.onresult = (e) => {
+                // Prende il testo capito dal microfono
                 const cmd = e.results[0][0].transcript.toLowerCase();
-                document.getElementById('transcript').textContent = cmd;
-                processCommand(cmd);
+                document.getElementById('transcript').textContent = cmd; // Lo scrive a schermo
+                processCommand(cmd); // Invia il testo alla logica del gioco
             };
 
-            recognition.onerror = (e) => {
-                console.log("Errore microfono:", e.error);
-                if(e.error === 'no-speech') {
-                    document.getElementById('transcript').textContent = "Non ho sentito...";
-                }
-            };
-
+            // Quando il microfono si spegne, resetta l'interfaccia dopo un secondo
             recognition.onend = () => {
                 isListening = false;
-                // Aspettiamo un secondo prima di rimpicciolire il pulsante
-                // così hai tempo di vedere cosa è successo
-                setTimeout(() => {
-                    if (!isListening) resetUI();
-                }, 1000);
+                setTimeout(() => { if (!isListening) resetUI(); }, 1200);
             };
         }
 
+        // RESETTA LA GRAFICA (Pulsanti tornano a posto, luci spente)
         function resetUI() {
             document.getElementById('unit').className = 'banker-unit';
             document.querySelectorAll('.player-btn').forEach(b => b.classList.remove('active-focus'));
@@ -243,7 +577,557 @@
             activeActor = null;
         }
 
-        // --- GESTIONE GIOCO ---
+        // GESTORE DEI 3 TOCCHI AL CENTRO (Apre la console manuale)
+        document.getElementById('unit').addEventListener('click', function () {
+            tapCount++;
+            clearTimeout(tapTimer);
+            if (tapCount === 3) {
+                const consoleDiv = document.getElementById('debug-console');
+                consoleDiv.style.display = (consoleDiv.style.display === 'flex') ? 'none' : 'flex';
+                tapCount = 0;
+            } else { tapTimer = setTimeout(() => { tapCount = 0; }, 500); }
+        });
+
+        // AVVIA LA PARTITA
+        function startGame() {
+            if (selectedColors.length < 2) return alert("Scegli i giocatori!");
+            initRecognition();
+
+            // Crea il portafoglio per ogni giocatore scelto
+            selectedColors.forEach(color => {
+                gameState.players[color] = { balance: 15000000 }; // 15 Milioni iniziali
+                document.getElementById(`card-${color}`).classList.add('active');
+            });
+
+            // Nasconde i pulsanti dei giocatori non scelti
+            ['blu', 'giallo', 'rosso', 'verde'].forEach(c => {
+                if (!selectedColors.includes(c)) document.getElementById(`btn-${c}`).style.display = 'none';
+            });
+
+            document.getElementById('setup-overlay').style.display = 'none';
+            speak("Bene, giochiamo!");
+        }
+
+        // ATTIVA IL MICROFONO PER UN GIOCATORE SPECIFICO
+        function activate(color) {
+            // --- AGGIUNTA: Riproduzione suono ping.mp3 ---
+            const audio = new Audio('ping.mp3');
+            audio.play().catch(error => console.log("Impossibile riprodurre l'audio:", error));
+            // --------------------------------------------
+
+            // Controllo: giocatore in bancarotta non può attivarsi
+            if (gameState.bankruptPlayers.includes(color)) {
+                speak(`Il giocatore ${color} è in bancarotta.`);
+                return;
+            }
+
+            if (isListening) return;
+            activeActor = color;
+            document.getElementById(`btn-${color}`).classList.add('active-focus'); // Muove il pulsante
+            document.getElementById('unit').className = `banker-unit listening-${color}`; // Accende la luce
+            document.getElementById('status-text').textContent = "Ti ascolto...";
+            try { recognition.start(); } catch (e) { }
+        }
+
+        // CONTROLLA SE UN GIOCATORE POSSIEDE TUTTE LE PROPRIETÀ DI UN COLORE (Serie completa)
+        function hasFullSet(owner, setName) {
+            const setProps = Object.values(gameState.properties).filter(p => p.set === setName);
+            return setProps.every(p => p.owner === owner);
+        }
+
+        // CONTA EDIFICI DI UN GIOCATORE (case e alberghi)
+        function countPlayerBuildings(player) {
+            let houses = 0;
+            let hotels = 0;
+            for (const prop of Object.values(gameState.properties)) {
+                if (prop.owner === player) {
+                    if (prop.houses === 5) hotels++;
+                    else if (prop.houses > 0) houses += prop.houses;
+                }
+            }
+            return { houses, hotels };
+        }
+
+        // CONTA PROPRIETÀ DI UN GIOCATORE (escludendo stazioni e società)
+        function countPlayerProperties(player) {
+            return Object.values(gameState.properties).filter(prop =>
+                prop.owner === player &&
+                prop.set !== "stazione" &&
+                prop.set !== "società"
+            ).length;
+        }
+
+        // SELEZIONA UNA PROPRIETÀ CASUALE (escludendo stazioni e società)
+        function getRandomProperty() {
+            // Filtra proprietà escludendo stazioni e società
+            const eligibleProps = Object.entries(gameState.properties).filter(([name, prop]) =>
+                prop.set !== "stazione" && prop.set !== "società"
+            );
+
+            // Prima cerca proprietà non ancora acquistate
+            const freeProps = eligibleProps.filter(([name, prop]) => prop.owner === null);
+
+            // Se ci sono proprietà libere, scegli tra quelle
+            if (freeProps.length > 0) {
+                const randomIndex = Math.floor(Math.random() * freeProps.length);
+                return freeProps[randomIndex][0]; // Restituisce solo il nome
+            }
+
+            // Altrimenti scegli casualmente tra tutte le proprietà ammissibili
+            const randomIndex = Math.floor(Math.random() * eligibleProps.length);
+            return eligibleProps[randomIndex][0]; // Restituisce solo il nome
+        }
+
+        // PESCA UNA CARTA IMPREVISTO CASUALE
+        function drawImprevisto() {
+            if (!activeActor) return;
+
+            // Seleziona carta casuale
+            const randomIndex = Math.floor(Math.random() * imprevisti.length);
+            const card = imprevisti[randomIndex];
+
+            // Annuncia la carta
+            speak(card.text);
+
+            // Esegue l'effetto dopo un breve ritardo
+            setTimeout(() => {
+                if (card.effect && typeof card.effect === 'function') {
+                    card.effect();
+                }
+            }, 1200);
+        }
+
+        // --- LA LOGICA CENTRALE: COSA FARE QUANDO L'UTENTE PARLA ---
+        function processCommand(msg) {
+
+            // COMANDO: PASSA DAL VIA
+            if (msg.includes("passa") && msg.includes("via")) {
+                updateBalance(activeActor, 2000000);
+                speak(`Ecco a te 2000000!`);
+                return;
+            }
+
+            // COMANDO: PRENDERE IL TRENO
+            if (msg.includes("prend") && msg.includes("treno")) {
+                const destination = getRandomProperty();
+                speak(`In carrozza! Vai fino a ${destination}.`);
+                return;
+            }
+
+            // COMANDO: PESCA IMPREVISTO
+            if (msg.includes("carta imprevisti") || msg.includes("carta probabilità")) {
+                drawImprevisto();
+                return;
+            }
+
+            // COMANDO: IMPOSTA I SOLDI
+            if (msg.includes("imposta") && msg.includes("soldi")) {
+                const amount = parseMoney(msg);
+                if (amount <= 0) {
+                    speak("Importo non valido. Specifica un valore positivo.");
+                    return;
+                }
+                const oldBalance = gameState.players[activeActor].balance;
+                gameState.players[activeActor].balance = amount;
+                document.getElementById(`bal-${activeActor}`).textContent = formatMoney(amount);
+                speak(`Ho impostato ${formatMoneyForSpeech(amount)} a ${activeActor}.`);
+                return;
+            }
+
+            // COMANDO: ESCI DALLA PRIGIONE
+            if ((msg.includes("esci") && msg.includes("prigione")) || msg.includes("prigione")) {
+                const jailFee = 500000;
+                if (gameState.players[activeActor].balance < jailFee) {
+                    speak(`Denaro insufficiente per pagare ${formatMoneyForSpeech(jailFee)}.`);
+                    return;
+                }
+                updateBalance(activeActor, -jailFee);
+                speak(`Hai pagato ${formatMoneyForSpeech(jailFee)}, puoi uscire di prigione, lancia i dadi!`);
+                return;
+            }
+
+            // COMANDO: ACQUISTA UNA PROPRIETÀ
+            if (msg.includes("acquista") || msg.includes("compra")) {
+                for (let p in gameState.properties) {
+                    if (msg.includes(p)) {
+                        let prop = gameState.properties[p];
+                        if (prop.owner) return speak(`${prop.owner} possiede ${p}.`);
+                        if (gameState.players[activeActor].balance >= prop.price) {
+                            updateBalance(activeActor, -prop.price);
+                            prop.owner = activeActor;
+                            speak(`${p} è tua per ${formatMoneyForSpeech(prop.price)}!`);
+                        } else { speak("Non hai abbastanza denaro."); }
+                        return;
+                    }
+                }
+            }
+
+            // --- NUOVI COMANDI: GESTIONE PROPRIETÀ SENZA TRANSAZIONI ---
+
+            // COMANDO: OTTIENI PROPRIETÀ (senza pagare)
+            if (msg.includes("ottieni")) {
+                for (let p in gameState.properties) {
+                    if (msg.includes(p)) {
+                        let prop = gameState.properties[p];
+                        if (prop.owner) return speak(`${prop.owner} possiede ${p}!`);
+
+                        prop.owner = activeActor;
+                        speak(`${p} è tua!`);
+                        return;
+                    }
+                }
+                speak("Proprietà non trovata.");
+                return;
+            }
+
+            // COMANDO: PERDI PROPRIETÀ (senza nulla in cambio)
+            if (msg.includes("perdi")) {
+                for (let p in gameState.properties) {
+                    if (msg.includes(p)) {
+                        let prop = gameState.properties[p];
+                        if (prop.owner !== activeActor) return speak("Non possiedi questa proprietà.");
+
+                        prop.owner = null;
+                        prop.houses = 0; // Resetta anche gli edifici
+                        prop.mortgaged = false; // Resetta ipoteca
+                        speak(`Hai perso la proprietà ${p}.`);
+                        return;
+                    }
+                }
+                speak("Proprietà non trovata.");
+                return;
+            }
+
+            // COMANDO: CEDI PROPRIETÀ (trasferimento gratuito ad altro giocatore)
+            if (msg.includes("cedi")) {
+                for (let p in gameState.properties) {
+                    if (msg.includes(p)) {
+                        let prop = gameState.properties[p];
+                        if (prop.owner !== activeActor) return speak(`${prop.owner} possiede ${p}`);
+
+                        // Trova il destinatario (altro giocatore attivo)
+                        const possibleRecipients = selectedColors.filter(color =>
+                            color !== activeActor && !gameState.bankruptPlayers.includes(color) && msg.includes(color)
+                        );
+
+                        if (possibleRecipients.length === 0) {
+                            speak("Destinatario non specificato o non valido.");
+                            return;
+                        }
+
+                        const recipient = possibleRecipients[0];
+                        prop.owner = recipient;
+                        speak(`Ora ${p} appartiene a ${recipient}.`);
+                        return;
+                    }
+                }
+                speak("Proprietà non trovata.");
+                return;
+            }
+
+            // --- COMANDO: BANCAROTTA ---
+            if (msg.includes("bancarotta")) {
+                const player = activeActor;
+
+                // Piccolo ritardo per dare tempo di ascoltare
+                setTimeout(() => {
+                    // 1. Azzera il saldo
+                    gameState.players[player].balance = 0;
+                    document.getElementById(`bal-${player}`).textContent = "0";
+
+                    // 2. Rimuovi tutte le proprietà del giocatore
+                    for (let p in gameState.properties) {
+                        let prop = gameState.properties[p];
+                        if (prop.owner === player) {
+                            prop.owner = null;
+                            prop.houses = 0;
+                            prop.mortgaged = false;
+                        }
+                    }
+
+                    // 3. Aggiungi alla lista dei falliti
+                    gameState.bankruptPlayers.push(player);
+
+                    // 4. Rimuovi dalla lista dei giocatori attivi
+                    selectedColors = selectedColors.filter(c => c !== player);
+
+                    // 5. Nascondi la balance-card e applica stile bancarotta
+                    const card = document.getElementById(`card-${player}`);
+                    card.classList.remove('active');
+                    card.classList.add('bancarotta');
+
+                    // 6. Nascondi il pulsante del giocatore
+                    document.getElementById(`btn-${player}`).style.display = 'none';
+
+                    // 7. Resetta l'interfaccia
+                    resetUI();
+
+                    // 8. Feedback vocale
+                    speak(`Giocatore ${player} è andato in bancarotta. Tutte le sue proprietà ora appartengono alla banca.`);
+
+                    // 9. Controlla se rimane un solo giocatore (vincitore)
+                    const remainingPlayers = selectedColors.filter(c => !gameState.bankruptPlayers.includes(c));
+                    if (remainingPlayers.length === 1) {
+                        setTimeout(() => {
+                            speak(`Il vincitore è il giocatore ${remainingPlayers[0]}! Congratulazioni!`);
+                        }, 1500);
+                    }
+                }, 1500);
+
+                return;
+            }
+
+            // COMANDO: PAGA L'AFFITTO
+            if (msg.includes("affitto")) {
+                for (let p in gameState.properties) {
+                    if (msg.includes(p)) {
+                        let prop = gameState.properties[p];
+                        if (!prop.owner || prop.owner === activeActor) return speak("Nessun affitto dovuto.");
+                        if (prop.mortgaged) return speak("La proprietà è ipotecata.");
+
+                        // Società (non hanno affitto automatico qui)
+                        if (prop.set === "società") return speak(`Lancia i dadi per calcolare l'affitto, dopodiché usa il comando paga il giocatore ${prop.owner}.`);
+
+                        let amount = 0;
+                        // Caso: Stazioni
+                        if (prop.set === "stazione") {
+                            // Conta quante stazioni possiede il proprietario (escludendo le ipotecate)
+                            const activeStations = Object.values(gameState.properties).filter(s =>
+                                s.set === "stazione" && s.owner === prop.owner && !s.mortgaged
+                            ).length;
+                            const stationRents = { 1: 250000, 2: 500000, 3: 1000000, 4: 2000000 };
+                            amount = stationRents[activeStations];
+                        }
+                        // Caso: Proprietà colorate
+                        else {
+                            if (prop.houses > 0) {
+                                // Se ci sono case, prendi l'affitto corrispondente dal database
+                                amount = prop.rents[prop.houses];
+                            } else {
+                                // Se non ci sono case, affitto base o doppio se ha la serie completa
+                                amount = prop.rents[0];
+                                if (hasFullSet(prop.owner, prop.set)) amount *= 2;
+                            }
+                        }
+
+                        updateBalance(activeActor, -amount);
+                        updateBalance(prop.owner, amount);
+                        speak(`Hai pagato al giocatore ${prop.owner}, ${formatMoneyForSpeech(amount)}.`);
+                        return;
+                    }
+                }
+            }
+
+            // --- NUOVO COMANDO: PAGA UN ALTRO GIOCATORE ---
+            // Trigger words: paga, versa, dai + nome colore (escluso se stesso) + importo
+            // Evita conflitti con "affitto" e comandi esistenti
+            if ((msg.includes("paga") || msg.includes("versa") || msg.includes("dai")) && !msg.includes("affitto")) {
+                // Trova possibili destinatari (giocatori attivi diversi da chi parla)
+                const possibleRecipients = selectedColors.filter(color =>
+                    color !== activeActor && !gameState.bankruptPlayers.includes(color) && msg.includes(color)
+                );
+
+                if (possibleRecipients.length > 0) {
+                    // Prende il primo destinatario trovato (ordine selezione)
+                    const recipient = possibleRecipients[0];
+                    const amount = parseMoney(msg);
+
+                    // Validazione importo
+                    if (amount <= 0) {
+                        speak("Importo non riconosciuto. Specifica una somma valida.");
+                        return;
+                    }
+
+                    // Validazione saldo
+                    if (gameState.players[activeActor].balance < amount) {
+                        speak("Non hai abbastanza denaro.");
+                        return;
+                    }
+
+                    // Esecuzione transazione
+                    updateBalance(activeActor, -amount);
+                    updateBalance(recipient, amount);
+                    speak(`Pagati ${formatMoneyForSpeech(amount)} a ${recipient}.`);
+                    return; // Esci dopo aver gestito il comando
+                }
+            }
+
+            // COMANDO: COSTRUZIONE CASE/ALBERGHI
+            // Deve contenere un verbo (costruisci/metti/ecc) E l'edificio (casa/albergo)
+            const isBuilding = msg.includes("costruisci") || msg.includes("metti") || msg.includes("compra") || msg.includes("fai");
+
+            // Costruzione Case
+            if (isBuilding && (msg.includes("casa") || msg.includes("abitazione"))) {
+                for (let p in gameState.properties) {
+                    if (msg.includes(p)) {
+                        let prop = gameState.properties[p];
+                        if (prop.set === "stazione" || prop.set === "società") return speak("Non si può costruire qui.");
+                        if (prop.owner !== activeActor) return speak();
+                        if (!hasFullSet(activeActor, prop.set)) return speak("Devi avere la serie completa.");
+                        if (prop.houses >= 4) return speak("Hai già 4 case.");
+
+                        if (gameState.players[activeActor].balance >= prop.buildCost) {
+                            updateBalance(activeActor, -prop.buildCost);
+                            prop.houses++;
+                            speak(`metti una casa su ${p}.`);
+                        } else { speak("Non hai abbastanza denaro."); }
+                        return;
+                    }
+                }
+            }
+            // Costruzione Alberghi
+            if (isBuilding && (msg.includes("albergo") || msg.includes("hotel"))) {
+                for (let p in gameState.properties) {
+                    if (msg.includes(p)) {
+                        let prop = gameState.properties[p];
+                        if (prop.owner !== activeActor) return speak("Non sei il proprietario.");
+                        if (prop.houses !== 4) return speak("Servono prima 4 case.");
+
+                        if (gameState.players[activeActor].balance >= prop.buildCost) {
+                            updateBalance(activeActor, -prop.buildCost);
+                            prop.houses = 5; // 5 significa Albergo
+                            speak(`metti un hotel su ${p}.`);
+                        } else { speak("Non hai abbastanza denaro."); }
+                        return;
+                    }
+                }
+            }
+
+            // COMANDO: DEMOLIZIONE (Vendere edifici per metà prezzo)
+            const isDemolishing = msg.includes("vendi") || msg.includes("togli") || msg.includes("demolisci") || msg.includes("rimuovi");
+            if (isDemolishing && (msg.includes("casa") || msg.includes("albergo") || msg.includes("hotel"))) {
+                for (let p in gameState.properties) {
+                    if (msg.includes(p)) {
+                        let prop = gameState.properties[p];
+                        if (prop.owner !== activeActor) return speak(`${prop.owner} possiede ${p}`);
+                        if (!prop.houses || prop.houses === 0) return speak("Non ci sono edifici.");
+
+                        let refund = prop.buildCost / 2; // Recuperi il 50%
+                        if (prop.houses === 5) {
+                            prop.houses = 4; // Rimuovendo l'hotel torni a 4 case
+                            speak(`Hotel rimosso. Tornano 4 case.`);
+                        } else {
+                            prop.houses--;
+                            speak(`Casa venduta su ${p}.`);
+                        }
+                        updateBalance(activeActor, refund);
+                        speak(`Ricevuti ${formatMoneyForSpeech(refund)}.`);
+                        return;
+                    }
+                }
+            }
+
+            // COMANDO: IPOTECA (Prendi metà valore della proprietà)
+            if (msg.includes("ipoteca") && !msg.includes("togli")) {
+                for (let p in gameState.properties) {
+                    if (msg.includes(p)) {
+                        let prop = gameState.properties[p];
+                        if (prop.owner !== activeActor) return speak("Non è tua.");
+                        if (prop.houses && prop.houses > 0) return speak("Vendi prima gli edifici.");
+                        prop.mortgaged = true;
+                        let val = prop.price / 2;
+                        updateBalance(activeActor, val);
+                        speak(`${p} ipotecata. Ricevi ${formatMoneyForSpeech(val)}.`);
+                        return;
+                    }
+                }
+            }
+
+            // COMANDO: TOGLI IPOTECA (Paghi metà valore + 10%)
+            if (msg.includes("togli") && msg.includes("ipoteca")) {
+                for (let p in gameState.properties) {
+                    if (msg.includes(p)) {
+                        let prop = gameState.properties[p];
+                        if (!prop.mortgaged) return speak("Non è ipotecata.");
+                        let val = (prop.price / 2) * 1.1;
+                        if (gameState.players[activeActor].balance >= val) {
+                            updateBalance(activeActor, -val);
+                            prop.mortgaged = false;
+                            speak(`Ipoteca tolta da ${p}.`);
+                        } else { speak("Non hai abbastanza denaro."); }
+                        return;
+                    }
+                }
+            }
+
+            // COMANDI GENERICI: PAGA O INCASSA DALLA BANCA
+            if (msg.includes("paga") || msg.includes("versa") || msg.includes("togli")) {
+                let amt = parseMoney(msg);
+                if (amt > 0) {
+                    if (gameState.players[activeActor].balance < amt) {
+                        speak("Non hai abbastanza denaro.");
+                        return;
+                    }
+                    updateBalance(activeActor, -amt);
+                    speak(`Pagati ${formatMoneyForSpeech(amt)}.`);
+                }
+                return;
+            }
+
+            if (msg.includes("incassa") || msg.includes("ricevi") || msg.includes("aggiungi")) {
+                let amt = parseMoney(msg);
+                if (amt > 0) {
+                    updateBalance(activeActor, amt);
+                    speak(`Ricevuti ${formatMoneyForSpeech(amt)}.`);
+                }
+                return;
+            }
+
+            // Se non ha trovato nessun comando valido
+            speak("Non ho capito il comando.");
+        }
+
+        // AGGIORNA IL SALDO DI UN GIOCATORE E LO SCRIVE NELLA CARD
+        function updateBalance(player, amount) {
+            // Controllo: giocatore in bancarotta non può ricevere/transare
+            if (gameState.bankruptPlayers.includes(player)) return;
+
+            gameState.players[player].balance += amount;
+            document.getElementById(`bal-${player}`).textContent = formatMoney(gameState.players[player].balance);
+        }
+
+        // TRASFORMA I NUMERI IN TESTO LEGGIBILE (es: 1500000 -> "1.5 milioni") - PER VISUALIZZAZIONE
+        function formatMoney(n) {
+            if (n >= 1000000) {
+                let val = (n / 1000000).toFixed(1);
+                val = val.endsWith(".0") ? val.slice(0, -2) : val; // Toglie lo .0 inutile
+                return val + (val === "1" ? " milione" : " milioni");
+            }
+            if (n >= 1000) return (n / 1000) + " mila";
+            return n;
+        }
+
+        // TRASFORMA I NUMERI IN TESTO PER LA SINTESI VOCALE (solo numeri interi)
+        function formatMoneyForSpeech(n) {
+            return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        // TRASFORMA LE PAROLE CAPITE DAL MICROFONO IN NUMERI (es: "due milioni" -> 2000000)
+        function parseMoney(text) {
+            const paroleNumeriche = { "un": 1, "uno": 1, "due": 2, "tre": 3, "quattro": 4, "cinque": 5, "sei": 6, "sette": 7, "otto": 8, "nove": 9, "dieci": 10 };
+            let val = 0;
+            let matchDigit = text.match(/\d+/); // Cerca cifre (es "2")
+
+            if (matchDigit) val = parseInt(matchDigit[0]);
+            else {
+                // Cerca le parole scritte
+                for (let parola in paroleNumeriche) {
+                    if (text.includes(parola)) { val = paroleNumeriche[parola]; break; }
+                }
+            }
+
+            if (val === 0) return 0;
+
+            // Moltiplica in base alle parole chiave "milioni" o "mila"
+            if (text.includes("milion")) return val * 1000000;
+            if (text.includes("mila")) return val * 1000;
+
+            // Se dici solo "paga 200", il banchiere assume che siano "mila"
+            if (val < 1000) return val * 1000;
+            return val;
+        }
+
+        // GESTORE SELEZIONE GIOCATORI (Setup)
         function togglePlayer(color, el) {
             if (selectedColors.includes(color)) {
                 selectedColors = selectedColors.filter(c => c !== color);
@@ -254,101 +1138,13 @@
             }
         }
 
-        function startGame() {
-            if (selectedColors.length < 2) return alert("Seleziona i giocatori!");
-            
-            initRecognition();
-            
-            selectedColors.forEach(color => {
-                gameState.players[color] = { balance: 15000000 };
-                document.getElementById(`card-${color}`).classList.add('active');
-            });
-
-            ['blu', 'giallo', 'rosso', 'verde'].forEach(c => {
-                if(!selectedColors.includes(c)) document.getElementById(`btn-${c}`).style.display = 'none';
-            });
-
-            document.getElementById('setup-overlay').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('setup-overlay').style.display = 'none';
-                speak("Banchiere attivo. Clicca il tuo colore e parla dopo il segnale.");
-            }, 800);
-        }
-
-        function activate(color) {
-            if (isListening) return; // Non interrompere se sta già ascoltando
-            
-            activeActor = color;
-            
-            // 1. EFFETTO GRAFICO IMMEDIATO
-            document.getElementById(`btn-${color}`).classList.add('active-focus');
-            document.getElementById('unit').className = `banker-unit listening-${color}`;
-            document.getElementById('status-text').textContent = "TI ASCOLTO...";
-            document.getElementById('transcript').textContent = "Parla ora";
-
-            // 2. AVVIO MICROFONO
-            try {
-                recognition.start();
-            } catch(e) {
-                console.log("Riconoscimento già in corso");
-            }
-        }
-
-        function processCommand(msg) {
-            if (msg.includes("Passare dal via")) {
-                updateBalance(activeActor, 2000000);
-                speak("Passato dal via. Hai ricevuto 2 milioni.");
-            } else if (msg.includes("acquista") || msg.includes("compra")) {
-                let found = false;
-                for (let p in gameState.properties) {
-                    if (msg.includes(p)) {
-                        let cost = gameState.properties[p].price;
-                        if(gameState.players[activeActor].balance >= cost) {
-                            updateBalance(activeActor, -cost);
-                            gameState.properties[p].owner = activeActor;
-                            speak(`Acquisto confermato: ${p}.`);
-                        } else { speak("Non hai abbastanza soldi."); }
-                        found = true; break;
-                    }
-                }
-                if(!found) speak("Proprietà non trovata.");
-            } else if (msg.includes("paga") || msg.includes("versa")) {
-                let amount = parseMoney(msg);
-                if(amount > 0) {
-                    updateBalance(activeActor, -amount);
-                    speak(`Pagati ${formatMoney(amount)}.`);
-                }
-            } else if (msg.includes("incassa")) {
-                let amount = parseMoney(msg);
-                if(amount > 0) {
-                    updateBalance(activeActor, amount);
-                    speak(`Incassati ${formatMoney(amount)}.`);
-                }
-            } else {
-                speak("Non ho capito, riprova.");
-            }
-        }
-
-        function updateBalance(player, amount) {
-            gameState.players[player].balance += amount;
-            document.getElementById(`bal-${player}`).textContent = formatMoney(gameState.players[player].balance);
-        }
-
-        function formatMoney(n) {
-            return (n / 1000000).toFixed(1) + "M";
-        }
-
-        function parseMoney(text) {
-            let num = text.match(/\d+/);
-            if (!num) return 0;
-            let val = parseInt(num[0]);
-            if (text.includes("milion")) return val * 1000000;
-            if (text.includes("mila")) return val * 1000;
-            return val;
+        // INVIA COMANDO DALLA CONSOLE MANUALE
+        function sendManualCommand() {
+            const input = document.getElementById('debug-input');
+            processCommand(input.value.toLowerCase());
+            input.value = "";
         }
     </script>
 </body>
 
 </html>
-
-
