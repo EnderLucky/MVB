@@ -715,13 +715,13 @@
             }
 
             // COMANDO: PESCA IMPREVISTO
-            if (msg.includes("carta imprevisti") || msg.includes("carta probabilità")) {
+            if (msg.includes("imprevist") || msg.includes("probabilità")) {
                 drawImprevisto();
                 return;
             }
 
             // COMANDO: IMPOSTA I SOLDI
-            if (msg.includes("imposta") && msg.includes("soldi")) {
+            if (msg.includes("imposta") && msg.includes("soldi") || msg.includes("denaro")) {
                 const amount = parseMoney(msg);
                 if (amount <= 0) {
                     speak("Importo non valido. Specifica un valore positivo.");
@@ -755,7 +755,7 @@
                         if (gameState.players[activeActor].balance >= prop.price) {
                             updateBalance(activeActor, -prop.price);
                             prop.owner = activeActor;
-                            speak(`${p} è tua per ${formatMoneyForSpeech(prop.price)}!`);
+                            speak(`${p}, è tua per ${formatMoneyForSpeech(prop.price)}!`);
                         } else { speak("Non hai abbastanza denaro."); }
                         return;
                     }
@@ -772,7 +772,7 @@
                         if (prop.owner) return speak(`${prop.owner} possiede ${p}!`);
 
                         prop.owner = activeActor;
-                        speak(`${p} è tua!`);
+                        speak(`${p}, ora è tua!`);
                         return;
                     }
                 }
@@ -790,7 +790,7 @@
                         prop.owner = null;
                         prop.houses = 0; // Resetta anche gli edifici
                         prop.mortgaged = false; // Resetta ipoteca
-                        speak(`Hai perso la proprietà ${p}.`);
+                        speak(`Hai perso ${p}.`);
                         return;
                     }
                 }
@@ -870,7 +870,7 @@
                     if (remainingPlayers.length === 1) {
                         setTimeout(() => {
                             speak(`Il vincitore è il giocatore ${remainingPlayers[0]}! Congratulazioni!`);
-                        }, 1500);
+                        }, 6000);
                     }
                 }, 1500);
 
@@ -1034,7 +1034,7 @@
             }
 
             // COMANDO: TOGLI IPOTECA (Paghi metà valore + 10%)
-            if (msg.includes("togli") && msg.includes("ipoteca")) {
+            if (msg.includes("togli") || msg.includes("cancella") && msg.includes("ipoteca")) {
                 for (let p in gameState.properties) {
                     if (msg.includes(p)) {
                         let prop = gameState.properties[p];
