@@ -357,7 +357,7 @@
                 "stazione est": { set: "stazione", price: 2000000, owner: null, mortgaged: false },
                 "stazione ovest": { set: "stazione", price: 2000000, owner: null, mortgaged: false },
                 "società elettrica": { set: "società", price: 1500000, owner: null, mortgaged: false },
-                "società dell'acqua potabile": { set: "società", price: 1500000, owner: null, mortgaged: false }
+                "società acqua potabile": { set: "società", price: 1500000, owner: null, mortgaged: false }
             }
         };
 
@@ -644,10 +644,12 @@
             try { recognition.start(); } catch (e) { }
         }
 
-        // CONTROLLA SE UN GIOCATORE POSSIEDE TUTTE LE PROPRIETÀ DI UN COLORE (Serie completa)
+        // CONTROLLA SE UN GIOCATORE POSSIEDE TUTTE LE PROPRIETÀ DI UN COLORE E NESSUNA È IPOTECATA
         function hasFullSet(owner, setName) {
             const setProps = Object.values(gameState.properties).filter(p => p.set === setName);
-            return setProps.every(p => p.owner === owner);
+            // La serie è considerata "completa" solo se il proprietario le ha tutte 
+            // E nessuna di esse è ipotecata
+            return setProps.every(p => p.owner === owner && !p.mortgaged);
         }
 
         // CONTA EDIFICI DI UN GIOCATORE (case e alberghi)
@@ -1097,6 +1099,7 @@
                     }
                 }
             }
+
 
             // COMANDI GENERICI: PAGA O INCASSA DALLA BANCA
             if (msg.includes("paga") || msg.includes("versa") || msg.includes("togli")) {
