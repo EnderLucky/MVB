@@ -539,11 +539,26 @@
         let tapTimer;
 
         // FUNZIONE PER FAR PARLARE IL BANCHIERE
-        function speak(text) {
-            window.speechSynthesis.cancel(); // Interrompe frasi precedenti
+        function speak(text, soundFile = null, soundAfter = false) {
+            window.speechSynthesis.cancel();
             const utter = new SpeechSynthesisUtterance(text);
             utter.lang = 'it-IT';
-            window.speechSynthesis.speak(utter);
+
+            if (soundFile && !soundAfter) {
+                // Riproduce il suono PRIMA del messaggio
+                const audio = new Audio(soundFile);
+                audio.play().catch(e => { });
+                window.speechSynthesis.speak(utter);
+            } else if (soundFile && soundAfter) {
+                // Riproduce il suono DOPO il messaggio
+                utter.onend = () => {
+                    const audio = new Audio(soundFile);
+                    audio.play().catch(e => { });
+                };
+                window.speechSynthesis.speak(utter);
+            } else {
+                window.speechSynthesis.speak(utter);
+            }
         }
 
         // INIZIALIZZAZIONE DEL MICROFONO
@@ -681,20 +696,14 @@
         // PESCA UNA CARTA IMPREVISTO CASUALE
         function drawImprevisto() {
             if (!activeActor) return;
+            const card = imprevisti[Math.floor(Math.random() * imprevisti.length)];
 
-            // Seleziona carta casuale
-            const randomIndex = Math.floor(Math.random() * imprevisti.length);
-            const card = imprevisti[randomIndex];
-
-            // Annuncia la carta
-            speak(card.text);
-
-            // Esegue l'effetto dopo un breve ritardo
-            setTimeout(() => {
-                if (card.effect && typeof card.effect === 'function') {
-                    card.effect();
-                }
-            }, 1200);
+            // Se la carta contiene "incassa", "ritira" o "ricevete", usa il Ka-ching alla fine
+            const isPositive = card.text.toLowerCase().includes("incassa") ||
+                card.text.toLowerCase().includes("ritira") ||
+                card.text.toLowerCase().includes("ricevete");
+            speak(card.text, isPositive ? "Ka-ching.mp3" : null, true);
+            setTimeout(() => { if (card.effect) card.effect(); }, 1200);
         }
 
         // --- LA LOGICA CENTRALE: COSA FARE QUANDO L'UTENTE PARLA ---
@@ -709,8 +718,7 @@
 
             // COMANDO: PRENDERE IL TRENO
             if (msg.includes("prend") && msg.includes("treno")) {
-                const destination = getRandomProperty();
-                speak(`In carrozza! Vai fino a ${destination}.`);
+                speak(`In carrozza! Vai fino a ${getRandomProperty()}.`, "train.mp3", false);
                 return;
             }
 
@@ -965,21 +973,14 @@
                 }
             }
 
-            // COMANDO: ASTA (con riconoscimento proprietà)
             if (msg.includes("asta")) {
                 let propName = null;
-                // Cerca se è stata nominata una proprietà nel comando
-                for (let p in gameState.properties) {
-                    if (msg.includes(p)) {
-                        propName = p;
-                        break;
-                    }
-                }
+                for (let p in gameState.properties) { if (msg.includes(p)) { propName = p; break; } }
 
                 if (propName) {
-                    speak(`Cominciamo l'asta per ${propName}! I giocatori devono rilanciare a voce. Al termine, il vincitore deve premere il suo pulsante e dire: Ottieni ${propName}, seguito dalla cifra finale.`);
+                    speak(`Asta per ${propName}! I giocatori possono rilanciare a voce. Al termine, il vincitore deve dire: Ottieni ${propName}, seguito dalla cifra finale.`, "martelletto.mp3", false);
                 } else {
-                    speak("Quale proprietà vuoi mettere all'asta? Specifica il nome, ad esempio: metti all'asta parco della vittoria.");
+                    speak("Quale proprietà vuoi mettere all'asta?");
                 }
                 return;
             }
@@ -994,14 +995,15 @@
                     if (msg.includes(p)) {
                         let prop = gameState.properties[p];
                         if (prop.set === "stazione" || prop.set === "società") return speak("Non si può costruire qui.");
-                        if (prop.owner !== activeActor) return speak();
+                        if (prop.owner !== activeActor) return speak("Questa proprietà non è tua.");
                         if (!hasFullSet(activeActor, prop.set)) return speak("Devi avere la serie completa.");
                         if (prop.houses >= 4) return speak("Hai già 4 case.");
 
                         if (gameState.players[activeActor].balance >= prop.buildCost) {
                             updateBalance(activeActor, -prop.buildCost);
                             prop.houses++;
-                            speak(`metti una casa su ${p}.`);
+                            // Riproduce build.mp3 PRIMA del messaggio (false)
+                            speak(`metti una casa su ${p}.`, "build.mp3", false);
                         } else { speak("Non hai abbastanza denaro."); }
                         return;
                     }
@@ -1017,8 +1019,9 @@
 
                         if (gameState.players[activeActor].balance >= prop.buildCost) {
                             updateBalance(activeActor, -prop.buildCost);
-                            prop.houses = 5; // 5 significa Albergo
-                            speak(`metti un hotel su ${p}.`);
+                            prop.houses = 5;
+                            // Riproduce build.mp3 PRIMA del messaggio (false)
+                            speak(`metti un hotel su ${p}.`, "build.mp3", false);
                         } else { speak("Non hai abbastanza denaro."); }
                         return;
                     }
