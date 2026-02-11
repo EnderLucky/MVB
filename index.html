@@ -1147,29 +1147,69 @@
             return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         }
 
-        // TRASFORMA LE PAROLE CAPITE DAL MICROFONO IN NUMERI (es: "due milioni" -> 2000000)
+        // TRASFORMA LE PAROLE CAPITE DAL MICROFONO IN NUMERI (Supporta somme composte come 1 milione e 500 mila)
         function parseMoney(text) {
-            const paroleNumeriche = { "un": 1, "uno": 1, "due": 2, "tre": 3, "quattro": 4, "cinque": 5, "sei": 6, "sette": 7, "otto": 8, "nove": 9, "dieci": 10 };
-            let val = 0;
-            let matchDigit = text.match(/\d+/); // Cerca cifre (es "2")
+            // 1. Pulizia: rimuove i punti che il microfono mette a volte come separatori delle migliaia
+            text = text.replace(/\./g, "").toLowerCase();
 
-            if (matchDigit) val = parseInt(matchDigit[0]);
-            else {
-                // Cerca le parole scritte
-                for (let parola in paroleNumeriche) {
-                    if (text.includes(parola)) { val = paroleNumeriche[parola]; break; }
+            // 2. Database delle somme scritte in lettere (da 50k a 950k)
+            const paroleComposte = {
+                "cinquantamila": 50000, "centomila": 100000, "centocinquantamila": 150000,
+                "duecentomila": 200000, "duecentocinquantamila": 250000, "trecentomila": 300000,
+                "trecentocinquantamila": 350000, "quattrocentomila": 400000, "quattrocentocinquantamila": 450000,
+                "cinquecentomila": 500000, "cinquecentocinquantamila": 550000, "seicentomila": 600000,
+                "seicentocinquantamila": 650000, "settecentomila": 700000, "settecentocinquantamila": 750000,
+                "ottocentomila": 800000, "ottocentocinquantamila": 850000, "novecentomila": 900000,
+                "novecentocinquantamila": 950000
+            };
+
+            const paroleSemplici = { "un": 1, "uno": 1, "due": 2, "tre": 3, "quattro": 4, "cinque": 5, "sei": 6, "sette": 7, "otto": 8, "nove": 9, "dieci": 10 };
+
+            function extractValue(subtext) {
+                // Cerca prima nei numeri scritti (es: "500000")
+                let matchDigit = subtext.match(/\d+/);
+                if (matchDigit) return parseInt(matchDigit[0]);
+                // Poi nelle parole semplici (es: "cinque")
+                for (let parola in paroleSemplici) {
+                    if (subtext.includes(parola)) return paroleSemplici[parola];
+                }
+                return 0;
+            }
+
+            let totale = 0;
+
+            // 3. Controllo parole composte (es: "cinquecentomila")
+            for (let parola in paroleComposte) {
+                if (text.includes(parola)) {
+                    totale += paroleComposte[parola];
+                    // Rimuove la parola per evitare che venga contata di nuovo nel ciclo successivo
+                    text = text.replace(parola, "");
                 }
             }
 
-            if (val === 0) return 0;
+            // 4. Gestione MILIONI + migliaia rimanenti (es: "un milione e 500 mila")
+            if (text.includes("milion")) {
+                let partiMilioni = text.split(/milion[ei]/);
+                totale += extractValue(partiMilioni[0]) * 1000000;
 
-            // Moltiplica in base alle parole chiave "milioni" o "mila"
-            if (text.includes("milion")) return val * 1000000;
-            if (text.includes("mila")) return val * 1000;
+                if (partiMilioni[1] && partiMilioni[1].includes("mila")) {
+                    totale += extractValue(partiMilioni[1]) * 1000;
+                }
+            }
+            // 5. Gestione MIGLIAIA semplici (es: "500 mila")
+            else if (text.includes("mila")) {
+                totale += extractValue(text) * 1000;
+            }
+            // 6. Cifra secca senza parole chiave (es: "paga 200")
+            else {
+                let val = extractValue(text);
+                if (val > 0) {
+                    // Se dici un numero piccolo (es: 100), il banchiere assume "mila"
+                    totale += (val < 1000) ? val * 1000 : val;
+                }
+            }
 
-            // Se dici solo "paga 200", il banchiere assume che siano "mila"
-            if (val < 1000) return val * 1000;
-            return val;
+            return totale;
         }
 
         // GESTORE SELEZIONE GIOCATORI (Setup)
