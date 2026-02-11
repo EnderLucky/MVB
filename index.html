@@ -764,22 +764,35 @@
 
             // --- NUOVI COMANDI: GESTIONE PROPRIETÀ SENZA TRANSAZIONI ---
 
-            // COMANDO: OTTIENI PROPRIETÀ (senza pagare)
+            // COMANDO: OTTIENI PROPRIETÀ (con eventuale pagamento)
             if (msg.includes("ottieni")) {
                 for (let p in gameState.properties) {
                     if (msg.includes(p)) {
                         let prop = gameState.properties[p];
                         if (prop.owner) return speak(`${prop.owner} possiede ${p}!`);
 
-                        prop.owner = activeActor;
-                        speak(`${p}, ora è tua!`);
+                        let cost = parseMoney(msg); // Cerca una cifra nel comando
+
+                        if (cost > 0) {
+                            // Messaggio se è stata specificata una cifra
+                            if (gameState.players[activeActor].balance >= cost) {
+                                updateBalance(activeActor, -cost);
+                                prop.owner = activeActor;
+                                speak(`${p} è tua per ${formatMoneyForSpeech(cost)}!`);
+                            } else {
+                                speak("Non hai abbastanza denaro per questa cifra.");
+                            }
+                        } else {
+                            // Messaggio se la cifra è 0 o non specificata
+                            prop.owner = activeActor;
+                            speak(`${p} ora è tua!`);
+                        }
                         return;
                     }
                 }
                 speak("Proprietà non trovata.");
                 return;
             }
-
             // COMANDO: PERDI PROPRIETÀ (senza nulla in cambio)
             if (msg.includes("perdi")) {
                 for (let p in gameState.properties) {
@@ -918,7 +931,7 @@
                 }
             }
 
-            // --- NUOVO COMANDO: PAGA UN ALTRO GIOCATORE ---
+            // PAGA UN ALTRO GIOCATORE
             // Trigger words: paga, versa, dai + nome colore (escluso se stesso) + importo
             // Evita conflitti con "affitto" e comandi esistenti
             if ((msg.includes("paga") || msg.includes("versa") || msg.includes("dai")) && !msg.includes("affitto")) {
@@ -950,6 +963,25 @@
                     speak(`Pagati ${formatMoneyForSpeech(amount)} a ${recipient}.`);
                     return; // Esci dopo aver gestito il comando
                 }
+            }
+
+            // COMANDO: ASTA (con riconoscimento proprietà)
+            if (msg.includes("asta")) {
+                let propName = null;
+                // Cerca se è stata nominata una proprietà nel comando
+                for (let p in gameState.properties) {
+                    if (msg.includes(p)) {
+                        propName = p;
+                        break;
+                    }
+                }
+
+                if (propName) {
+                    speak(`Cominciamo l'asta per ${propName}! I giocatori devono rilanciare a voce. Al termine, il vincitore deve premere il suo pulsante e dire: Ottieni ${propName}, seguito dalla cifra finale.`);
+                } else {
+                    speak("Quale proprietà vuoi mettere all'asta? Specifica il nome, ad esempio: metti all'asta parco della vittoria.");
+                }
+                return;
             }
 
             // COMANDO: COSTRUZIONE CASE/ALBERGHI
@@ -993,6 +1025,7 @@
                 }
             }
 
+
             // COMANDO: DEMOLIZIONE (Vendere edifici per metà prezzo)
             const isDemolishing = msg.includes("vendi") || msg.includes("togli") || msg.includes("demolisci") || msg.includes("rimuovi");
             if (isDemolishing && (msg.includes("casa") || msg.includes("albergo") || msg.includes("hotel"))) {
@@ -1018,12 +1051,24 @@
             }
 
             // COMANDO: IPOTECA (Prendi metà valore della proprietà)
-            if (msg.includes("ipoteca") && !msg.includes("togli")) {
+            if (msg.includes("ipoteca") && !msg.includes("togli") && !msg.includes("rimuovi") && !msg.includes("ripaga") && !msg.includes("cancella")) {
                 for (let p in gameState.properties) {
                     if (msg.includes(p)) {
                         let prop = gameState.properties[p];
-                        if (prop.owner !== activeActor) return speak("Non è tua.");
-                        if (prop.houses && prop.houses > 0) return speak("Vendi prima gli edifici.");
+
+                        // Controllo proprietà
+                        if (prop.owner !== activeActor) return speak(`Non è tua, appartiene a ${prop.owner}`);
+
+                        // NUOVO: Controllo se è già ipotecata
+                        if (prop.mortgaged) return speak("Questa proprietà è già ipotecata.");
+
+                        // NUOVO: Controllo edifici in tutta la serie (set)
+                        const buildingsInSet = Object.values(gameState.properties).some(item =>
+                            item.set === prop.set && item.houses > 0
+                        );
+                        if (buildingsInSet) return speak("devi prima demolire tutti gli edifici dalla serie di proprietà");
+
+                        // Esecuzione ipoteca
                         prop.mortgaged = true;
                         let val = prop.price / 2;
                         updateBalance(activeActor, val);
@@ -1034,7 +1079,7 @@
             }
 
             // COMANDO: TOGLI IPOTECA (Paghi metà valore + 10%)
-            if (msg.includes("togli") || msg.includes("cancella") && msg.includes("ipoteca")) {
+            if (msg.includes("togli") || msg.includes("cancella") || msg.includes("rimuovi") || msg.includes("ripaga") && msg.includes("ipoteca")) {
                 for (let p in gameState.properties) {
                     if (msg.includes(p)) {
                         let prop = gameState.properties[p];
@@ -1043,7 +1088,7 @@
                         if (gameState.players[activeActor].balance >= val) {
                             updateBalance(activeActor, -val);
                             prop.mortgaged = false;
-                            speak(`Ipoteca tolta da ${p}.`);
+                            speak(`Ipoteca tolta da ${p} pagando ${formatMoneyForSpeech(val)}.`);
                         } else { speak("Non hai abbastanza denaro."); }
                         return;
                     }
@@ -1148,5 +1193,3 @@
 </body>
 
 </html>
-
-
