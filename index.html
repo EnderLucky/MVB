@@ -340,9 +340,9 @@
                 "piazza università": { set: "rosa", price: 1600000, buildCost: 1000000, rents: [120000, 600000, 1800000, 5000000, 7000000, 9000000], owner: null, houses: 0, mortgaged: false },
                 "via verdi": { set: "arancio", price: 1800000, buildCost: 1000000, rents: [140000, 700000, 2000000, 5500000, 7500000, 9500000], owner: null, houses: 0, mortgaged: false },
                 "corso raffaello": { set: "arancio", price: 1800000, buildCost: 1000000, rents: [140000, 700000, 2000000, 5500000, 7500000, 9500000], owner: null, houses: 0, mortgaged: false },
-                "viale dante": { set: "arancio", price: 2000000, buildCost: 1000000, rents: [160000, 800000, 2200000, 6000000, 8000000, 10000000], owner: null, houses: 0, mortgaged: false },
+                "piazza dante": { set: "arancio", price: 2000000, buildCost: 1000000, rents: [160000, 800000, 2200000, 6000000, 8000000, 10000000], owner: null, houses: 0, mortgaged: false },
                 "via marco polo": { set: "rosso", price: 2200000, buildCost: 1500000, rents: [180000, 900000, 2500000, 7000000, 8750000, 10500000], owner: null, houses: 0, mortgaged: false },
-                "corso margellano": { set: "rosso", price: 2200000, buildCost: 1500000, rents: [180000, 900000, 2500000, 7000000, 8750000, 10500000], owner: null, houses: 0, mortgaged: false },
+                "corso magellano": { set: "rosso", price: 2200000, buildCost: 1500000, rents: [180000, 900000, 2500000, 7000000, 8750000, 10500000], owner: null, houses: 0, mortgaged: false },
                 "largo colombo": { set: "rosso", price: 2400000, buildCost: 1500000, rents: [200000, 1000000, 3000000, 7500000, 9250000, 11000000], owner: null, houses: 0, mortgaged: false },
                 "viale costantino": { set: "giallo", price: 2600000, buildCost: 1500000, rents: [220000, 1100000, 3300000, 8000000, 9750000, 11500000], owner: null, houses: 0, mortgaged: false },
                 "viale traiano": { set: "giallo", price: 2600000, buildCost: 1500000, rents: [220000, 1100000, 3300000, 8000000, 9750000, 11500000], owner: null, houses: 0, mortgaged: false },
@@ -780,7 +780,7 @@
                 const oldBalance = gameState.players[activeActor].balance;
                 gameState.players[activeActor].balance = amount;
                 document.getElementById(`bal-${activeActor}`).textContent = formatMoney(amount);
-                speak(`Ho impostato ${formatMoneyForSpeech(amount)} a ${activeActor}.`);
+                speak(`Ho impostato ${formatMoneyForSpeech(amount)} a ${activeActor} banconote del monopoly.`);
                 return;
             }
 
@@ -805,7 +805,7 @@
                         if (gameState.players[activeActor].balance >= prop.price) {
                             updateBalance(activeActor, -prop.price);
                             prop.owner = activeActor;
-                            speak(`${p}, è tua per ${formatMoneyForSpeech(prop.price)}!`, "Ka-ching", false, 2000);
+                            speak(`${p}, è tua per ${formatMoneyForSpeech(prop.price)} banconote del monopoly!`, "Ka-ching", false, 2000);
                         } else { speak("Non hai abbastanza denaro."); }
                         return;
                     }
@@ -828,7 +828,7 @@
                             if (gameState.players[activeActor].balance >= cost) {
                                 updateBalance(activeActor, -cost);
                                 prop.owner = activeActor;
-                                speak(`${p} è tua per ${formatMoneyForSpeech(cost)}!`);
+                                speak(`${p} è tua per ${formatMoneyForSpeech(cost)} banconote del monopoly!`);
                             } else {
                                 speak("Non hai abbastanza denaro per questa cifra.");
                             }
@@ -1011,7 +1011,7 @@
                     // Esecuzione transazione
                     updateBalance(activeActor, -amount);
                     updateBalance(recipient, amount);
-                    speak(`Pagati ${formatMoneyForSpeech(amount)} a ${recipient}.`);
+                    speak(`Hai pagato ${formatMoneyForSpeech(amount)} banconote del monopoly a ${recipient}.`);
                     return; // Esci dopo aver gestito il comando
                 }
             }
@@ -1118,7 +1118,7 @@
                         prop.mortgaged = true;
                         let val = prop.price / 2;
                         updateBalance(activeActor, val);
-                        speak(`${p} ipotecata. Ricevi ${formatMoneyForSpeech(val)}.`);
+                        speak(`${p} ipotecata. Ricevi ${formatMoneyForSpeech(val)} banconote del monopoly.`);
                         return;
                     }
                 }
@@ -1134,7 +1134,7 @@
                         if (gameState.players[activeActor].balance >= val) {
                             updateBalance(activeActor, -val);
                             prop.mortgaged = false;
-                            speak(`Ipoteca tolta da ${p} pagando ${formatMoneyForSpeech(val)}.`);
+                            speak(`Ipoteca tolta da ${p} pagando ${formatMoneyForSpeech(val)} banconote del monopoly.`);
                         } else { speak("Non hai abbastanza denaro."); }
                         return;
                     }
@@ -1160,7 +1160,7 @@
                 let amt = parseMoney(msg);
                 if (amt > 0) {
                     updateBalance(activeActor, amt);
-                    speak(`Ricevuti ${formatMoneyForSpeech(amt)}.`, "Ka-ching", true, 100);
+                    speak(`Ricevuti ${formatMoneyForSpeech(amt)} banconote del monopoly.`, "Ka-ching", true, 100);
                 }
                 return;
             }
