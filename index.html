@@ -469,7 +469,7 @@
                 }
             },
             {
-                text: "Carta imprevisti: Ricevete una consulenza: incassate 500000.",
+                text: "Carta imprevisti: Ricevete una consulenza: incassi 500000.",
                 effect: () => {
                     updateBalance(activeActor, 500000);
                 }
@@ -483,20 +483,20 @@
                 }
             },
             {
-                text: "Carta imprevisti: Avete vinto un premio di bellezza: incassate 100000.",
+                text: "Carta imprevisti: Avete vinto un premio di bellezza: incassi 100000.",
                 effect: () => {
                     updateBalance(activeActor, 100000);
                 }
             },
             {
-                text: "Carta imprevisti: Ereditate 1M.",
+                text: "Carta imprevisti: Erediti 1M.",
                 effect: () => {
                     updateBalance(activeActor, 1000000);
                 }
             },
             // --- NUOVE CARTE IMPREVISTI DIVERTENTI E BILANCIATE ---
             {
-                text: "Carta imprevisti: Hai vinto la lotteria nazionale! Incassa 3000000.",
+                text: "Carta imprevisti: Hai vinto la lotteria nazionale! Incassi 3000000.",
                 effect: () => {
                     updateBalance(activeActor, 3000000);
                 }
@@ -739,9 +739,12 @@
             // Se la carta contiene "incassa", "ritira" o "ricevete", usa il Ka-ching alla fine
             const isPositive = card.text.toLowerCase().includes("incassa") ||
                 card.text.toLowerCase().includes("ritira") ||
-                card.text.toLowerCase().includes("ricevete");
+                card.text.toLowerCase().includes("ricevete") ||
+                card.text.toLowerCase().includes("Ogni giocatore ti paga") ||
+                card.text.toLowerCase().includes("incassi") ||
+                card.text.toLowerCase().includes("Erediti");
             speak(card.text, isPositive ? "Ka-ching" : null, true);
-            setTimeout(() => { if (card.effect) card.effect(); }, 1200);
+            setTimeout(() => { if (card.effect) card.effect(); }, 200);
         }
 
         // --- LA LOGICA CENTRALE: COSA FARE QUANDO L'UTENTE PARLA ---
@@ -802,7 +805,7 @@
                         if (gameState.players[activeActor].balance >= prop.price) {
                             updateBalance(activeActor, -prop.price);
                             prop.owner = activeActor;
-                            speak(`${p}, è tua per ${formatMoneyForSpeech(prop.price)}!`, "Ka-ching", true, 500);
+                            speak(`${p}, è tua per ${formatMoneyForSpeech(prop.price)}!`, "Ka-ching", false, 2000);
                         } else { speak("Non hai abbastanza denaro."); }
                         return;
                     }
@@ -973,7 +976,7 @@
 
                         updateBalance(activeActor, -amount);
                         updateBalance(prop.owner, amount);
-                        speak(`Hai pagato al giocatore ${prop.owner}, ${formatMoneyForSpeech(amount)}.`, "Ka-ching", true, 500);
+                        speak(`Hai pagato al giocatore ${prop.owner}, ${formatMoneyForSpeech(amount)}.`, "Ka-ching", false, 2000);
                         return;
                     }
                 }
@@ -1157,7 +1160,7 @@
                 let amt = parseMoney(msg);
                 if (amt > 0) {
                     updateBalance(activeActor, amt);
-                    speak(`Ricevuti ${formatMoneyForSpeech(amt)}.`, "Ka-ching", true, 2000);
+                    speak(`Ricevuti ${formatMoneyForSpeech(amt)}.`, "Ka-ching", true, 100);
                 }
                 return;
             }
