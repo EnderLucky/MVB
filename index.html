@@ -538,25 +538,59 @@
         let tapCount = 0; // Contatore per i 3 tocchi segreti
         let tapTimer;
 
-        // FUNZIONE PER FAR PARLARE IL BANCHIERE
-        function speak(text, soundFile = null, soundAfter = false) {
+        // PRE-CARICAMENTO AUDIO
+        let audioFiles = {};
+        const audioMap = {
+            'ping': 'ping.mp3',
+            'Ka-ching': 'Ka-ching.mp3',
+            'train': 'train.mp3',
+            'martelletto': 'martelletto.mp3',
+            'build': 'build.mp3',
+            'gameover': 'gameover.mp3',
+            'victory': 'victory.mp3'
+        };
+
+        function preloadAudios() {
+            for (let key in audioMap) {
+                audioFiles[key] = new Audio(audioMap[key]);
+                audioFiles[key].load();
+            }
+        }
+
+        // NUOVA FUNZIONE SPEAK
+        function speak(text, soundFile = null, soundAfter = false, delay = 0) {
             window.speechSynthesis.cancel();
             const utter = new SpeechSynthesisUtterance(text);
             utter.lang = 'it-IT';
 
             if (soundFile && !soundAfter) {
-                // Riproduce il suono PRIMA del messaggio
-                const audio = new Audio(soundFile);
+                // Suono PRIMA → attesa → testo vocale
+                const audio = new Audio(soundFile + '.mp3');
                 audio.play().catch(e => { });
-                window.speechSynthesis.speak(utter);
+
+                if (delay > 0) {
+                    setTimeout(() => {
+                        window.speechSynthesis.speak(utter);
+                    }, delay);
+                } else {
+                    window.speechSynthesis.speak(utter);
+                }
             } else if (soundFile && soundAfter) {
-                // Riproduce il suono DOPO il messaggio
+                // Testo vocale → attesa → suono DOPO
                 utter.onend = () => {
-                    const audio = new Audio(soundFile);
-                    audio.play().catch(e => { });
+                    if (delay > 0) {
+                        setTimeout(() => {
+                            const audio = new Audio(soundFile + '.mp3');
+                            audio.play().catch(e => { });
+                        }, delay);
+                    } else {
+                        const audio = new Audio(soundFile + '.mp3');
+                        audio.play().catch(e => { });
+                    }
                 };
                 window.speechSynthesis.speak(utter);
             } else {
+                // Solo testo vocale
                 window.speechSynthesis.speak(utter);
             }
         }
@@ -607,6 +641,7 @@
         function startGame() {
             if (selectedColors.length < 2) return alert("Scegli i giocatori!");
             initRecognition();
+            preloadAudios();
 
             // Crea il portafoglio per ogni giocatore scelto
             selectedColors.forEach(color => {
@@ -633,6 +668,7 @@
             // Controllo: giocatore in bancarotta non può attivarsi
             if (gameState.bankruptPlayers.includes(color)) {
                 speak(`Il giocatore ${color} è in bancarotta.`);
+                speak("gameover", true);
                 return;
             }
 
@@ -704,7 +740,7 @@
             const isPositive = card.text.toLowerCase().includes("incassa") ||
                 card.text.toLowerCase().includes("ritira") ||
                 card.text.toLowerCase().includes("ricevete");
-            speak(card.text, isPositive ? "Ka-ching.mp3" : null, true);
+            speak(card.text, isPositive ? "Ka-ching" : null, true);
             setTimeout(() => { if (card.effect) card.effect(); }, 1200);
         }
 
@@ -714,13 +750,14 @@
             // COMANDO: PASSA DAL VIA
             if (msg.includes("passa") && msg.includes("via")) {
                 updateBalance(activeActor, 2000000);
-                speak(`Ecco a te 2000000!`);
+                speak(`Ecco a te 2000000!`, "Ka-ching", true, 500);
                 return;
             }
 
             // COMANDO: PRENDERE IL TRENO
             if (msg.includes("prend") && msg.includes("treno")) {
-                speak(`In carrozza! Vai fino a ${getRandomProperty()}.`, "train.mp3", false);
+
+                speak(`In carrozza! Vai fino a ${getRandomProperty()}.`, "train", false, 3000);
                 return;
             }
 
@@ -765,7 +802,7 @@
                         if (gameState.players[activeActor].balance >= prop.price) {
                             updateBalance(activeActor, -prop.price);
                             prop.owner = activeActor;
-                            speak(`${p}, è tua per ${formatMoneyForSpeech(prop.price)}!`);
+                            speak(`${p}, è tua per ${formatMoneyForSpeech(prop.price)}!`, "Ka-ching", true, 500);
                         } else { speak("Non hai abbastanza denaro."); }
                         return;
                     }
@@ -886,14 +923,15 @@
                     resetUI();
 
                     // 8. Feedback vocale
-                    speak(`Giocatore ${player} è andato in bancarotta. Tutte le sue proprietà ora appartengono alla banca.`);
+
+                    speak(`Giocatore ${player} è andato in bancarotta. Tutte le sue proprietà ora appartengono alla banca.`, "gameover", true);
 
                     // 9. Controlla se rimane un solo giocatore (vincitore)
                     const remainingPlayers = selectedColors.filter(c => !gameState.bankruptPlayers.includes(c));
                     if (remainingPlayers.length === 1) {
                         setTimeout(() => {
-                            speak(`Il vincitore è il giocatore ${remainingPlayers[0]}! Congratulazioni!`);
-                        }, 6000);
+                            speak(`Il vincitore è il giocatore ${remainingPlayers[0]}! Congratulazioni!`, "victory", true);
+                        }, 12000);
                     }
                 }, 1500);
 
@@ -935,7 +973,7 @@
 
                         updateBalance(activeActor, -amount);
                         updateBalance(prop.owner, amount);
-                        speak(`Hai pagato al giocatore ${prop.owner}, ${formatMoneyForSpeech(amount)}.`);
+                        speak(`Hai pagato al giocatore ${prop.owner}, ${formatMoneyForSpeech(amount)}.`, "Ka-ching", true, 500);
                         return;
                     }
                 }
@@ -980,7 +1018,7 @@
                 for (let p in gameState.properties) { if (msg.includes(p)) { propName = p; break; } }
 
                 if (propName) {
-                    speak(`Asta per ${propName}! I giocatori possono rilanciare a voce. Al termine, il vincitore deve dire: Ottieni ${propName}, seguito dalla cifra finale.`, "martelletto.mp3", false);
+                    speak(`Asta per ${propName}! I giocatori possono rilanciare a voce. Al termine, il vincitore deve dire: Ottieni ${propName}, seguito dalla cifra finale.`, "martelletto", false, 2000);
                 } else {
                     speak("Quale proprietà vuoi mettere all'asta?");
                 }
@@ -1005,7 +1043,7 @@
                             updateBalance(activeActor, -prop.buildCost);
                             prop.houses++;
                             // Riproduce build.mp3 PRIMA del messaggio (false)
-                            speak(`metti una casa su ${p}.`, "build.mp3", false);
+                            speak(`metti una casa su ${p}.`, "build", false, 3000);
                         } else { speak("Non hai abbastanza denaro."); }
                         return;
                     }
@@ -1023,7 +1061,7 @@
                             updateBalance(activeActor, -prop.buildCost);
                             prop.houses = 5;
                             // Riproduce build.mp3 PRIMA del messaggio (false)
-                            speak(`metti un hotel su ${p}.`, "build.mp3", false);
+                            speak(`metti un hotel su ${p}.`, "build", false);
                         } else { speak("Non hai abbastanza denaro."); }
                         return;
                     }
@@ -1119,7 +1157,7 @@
                 let amt = parseMoney(msg);
                 if (amt > 0) {
                     updateBalance(activeActor, amt);
-                    speak(`Ricevuti ${formatMoneyForSpeech(amt)}.`);
+                    speak(`Ricevuti ${formatMoneyForSpeech(amt)}.`, "Ka-ching", true, 2000);
                 }
                 return;
             }
