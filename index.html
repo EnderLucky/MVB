@@ -788,21 +788,24 @@
                 return;
             }
 
-            // COMANDO: ACQUISTA UNA PROPRIETÀ
-            if (msg.includes("acquista") || msg.includes("compra")) {
-                for (let p in gameState.properties) {
-                    if (msg.includes(p)) {
-                        let prop = gameState.properties[p];
-                        if (prop.owner) return speak(`${prop.owner} possiede ${p}.`);
-                        if (gameState.players[activeActor].balance >= prop.price) {
-                            updateBalance(activeActor, -prop.price);
-                            prop.owner = activeActor;
-                            speak(`${p}, è tua per ${formatMoneyForSpeech(prop.price)} banconote del monopoly!`, "Ka-ching", false, 2000);
-                        } else { speak("Non hai abbastanza denaro."); }
-                        return;
-                    }
-                }
-            }
+         if msg.includes("acquista") || msg.includes("compra")) {
+    let pName = Object.keys(gameState.properties).find(p => msg.includes(p));
+    if (pName) {
+        let prop = gameState.properties[pName], cost = parseMoney(msg);
+        // Se dici "acquista" senza prezzo, usa il prezzo del tabellone
+        if (cost === 0 && msg.includes("acquista")) cost = prop.price;
+        
+        if (gameState.players[activeActor].balance >= cost) {
+            updateBalance(activeActor, -cost); 
+            prop.owner = activeActor;
+            // Suono PRIMA del messaggio (false) per massima compatibilità
+            speak(`${pName} è tua!`, "Ka-ching.mp3", false);
+        } else {
+            speak("Soldi insufficienti.");
+        }
+    }
+    return;
+}
 
             // --- NUOVI COMANDI: GESTIONE PROPRIETÀ SENZA TRANSAZIONI ---
 
@@ -1275,6 +1278,7 @@ if (msg.includes("togli") && msg.includes("ipoteca")) {
 </body>
 
 </html>
+
 
 
 
