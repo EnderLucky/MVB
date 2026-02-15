@@ -1130,7 +1130,7 @@
                     if (msg.includes(p)) {
                         let prop = gameState.properties[p];
                         if (!prop.mortgaged) return speak("Non è ipotecata.");
-                        let val = prop.price * 0.55;
+                        let val = Math.round(prop.price * 0.55);
                         if (gameState.players[activeActor].balance >= val) {
                             updateBalance(activeActor, -val);
                             prop.mortgaged = false;
@@ -1280,3 +1280,4 @@
 </body>
 
 </html>
+
