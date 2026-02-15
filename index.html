@@ -333,7 +333,7 @@
                 "vicolo corto": { set: "marrone", price: 600000, buildCost: 500000, rents: [20000, 100000, 300000, 900000, 1600000, 2500000], owner: null, houses: 0, mortgaged: false },
                 "vicolo stretto": { set: "marrone", price: 600000, buildCost: 500000, rents: [40000, 200000, 600000, 1800000, 3200000, 4500000], owner: null, houses: 0, mortgaged: false },
                 "bastioni gran sasso": { set: "azzurro", price: 1000000, buildCost: 500000, rents: [60000, 300000, 900000, 2700000, 4000000, 5500000], owner: null, houses: 0, mortgaged: false },
-                "viale monterosa": { set: "azzurro", price: 1000000, buildCost: 500000, rents: [60000, 300000, 900000, 2700000, 4000000, 5500000], owner: null, houses: 0, mortgaged: false },
+                "viale monte rosa": { set: "azzurro", price: 1000000, buildCost: 500000, rents: [60000, 300000, 900000, 2700000, 4000000, 5500000], owner: null, houses: 0, mortgaged: false },
                 "viale vesuvio": { set: "azzurro", price: 1200000, buildCost: 500000, rents: [80000, 400000, 1000000, 3000000, 4500000, 6000000], owner: null, houses: 0, mortgaged: false },
                 "via accademia": { set: "rosa", price: 1400000, buildCost: 1000000, rents: [100000, 500000, 1500000, 4500000, 6250000, 7500000], owner: null, houses: 0, mortgaged: false },
                 "corso ateneo": { set: "rosa", price: 1400000, buildCost: 1000000, rents: [100000, 500000, 1500000, 4500000, 6250000, 7500000], owner: null, houses: 0, mortgaged: false },
@@ -489,7 +489,7 @@
                 }
             },
             {
-                text: "Carta imprevisti: Erediti 1M.",
+                text: "Carta imprevisti: Erediti 1000000.",
                 effect: () => {
                     updateBalance(activeActor, 1000000);
                 }
@@ -1130,7 +1130,7 @@
                     if (msg.includes(p)) {
                         let prop = gameState.properties[p];
                         if (!prop.mortgaged) return speak("Non è ipotecata.");
-                        let val = (prop.price / 2) * 1.1;
+                        let val = prop.price * 0.55;
                         if (gameState.players[activeActor].balance >= val) {
                             updateBalance(activeActor, -val);
                             prop.mortgaged = false;
@@ -1280,3 +1280,4 @@
 </body>
 
 </html>
+
