@@ -788,7 +788,7 @@
                 return;
             }
 
-         if msg.includes("acquista") || msg.includes("compra")) {
+         if (msg.includes("acquista") || msg.includes("compra")) {
     let pName = Object.keys(gameState.properties).find(p => msg.includes(p));
     if (pName) {
         let prop = gameState.properties[pName], cost = parseMoney(msg);
@@ -1278,6 +1278,7 @@ if (msg.includes("togli") && msg.includes("ipoteca")) {
 </body>
 
 </html>
+
 
 
 
