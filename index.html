@@ -558,33 +558,41 @@
         }
 
         // NUOVA FUNZIONE SPEAK
-        async function speak(text, soundFile = null, soundAfter = false) {
-    window.speechSynthesis.cancel();
+        function speak(text, soundFile = null, soundAfter = false, delay = 0) {
+            window.speechSynthesis.cancel();
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.lang = 'it-IT';
 
-    // Arrotonda ogni numero trovato nel testo per eliminare i decimali fantasma
-    let cleanedText = text.toString().split(" ").map(word => {
-        if (!isNaN(word) && word !== "" && !word.includes(":")) {
-            return Math.round(parseFloat(word)).toString();
-        }
-        return word;
-    }).join(" ");
+            if (soundFile && !soundAfter) {
+                // Suono PRIMA → attesa → testo vocale
+                const audio = new Audio(soundFile + '.mp3');
+                audio.play().catch(e => { });
 
-    // Toglie i punti per una lettura fluida
-    const voiceSafeText = cleanedText.replace(/\./g, "");
-    const utter = new SpeechSynthesisUtterance(voiceSafeText);
-    utter.lang = 'it-IT';
-
-    if (soundFile) {
-        if (!soundAfter) {
-            await playSound(soundFile); 
-            window.speechSynthesis.speak(utter);
-        } else {
-            utter.onend = () => playSound(soundFile);
-            window.speechSynthesis.speak(utter);
-        }
-    } else {
-        window.speechSynthesis.speak(utter);
-    }
+                if (delay > 0) {
+                    setTimeout(() => {
+                        window.speechSynthesis.speak(utter);
+                    }, delay);
+                } else {
+                    window.speechSynthesis.speak(utter);
+                }
+            } else if (soundFile && soundAfter) {
+                // Testo vocale → attesa → suono DOPO
+                utter.onend = () => {
+                    if (delay > 0) {
+                        setTimeout(() => {
+                            const audio = new Audio(soundFile + '.mp3');
+                            audio.play().catch(e => { });
+                        }, delay);
+                    } else {
+                        const audio = new Audio(soundFile + '.mp3');
+                        audio.play().catch(e => { });
+                    }
+                };
+                window.speechSynthesis.speak(utter);
+            } else {
+                // Solo testo vocale
+                window.speechSynthesis.speak(utter);
+            }
         }
 
         // INIZIALIZZAZIONE DEL MICROFONO
@@ -788,24 +796,21 @@
                 return;
             }
 
-         if (msg.includes("acquista") || msg.includes("compra")) {
-    let pName = Object.keys(gameState.properties).find(p => msg.includes(p));
-    if (pName) {
-        let prop = gameState.properties[pName], cost = parseMoney(msg);
-        // Se dici "acquista" senza prezzo, usa il prezzo del tabellone
-        if (cost === 0 && msg.includes("acquista")) cost = prop.price;
-        
-        if (gameState.players[activeActor].balance >= cost) {
-            updateBalance(activeActor, -cost); 
-            prop.owner = activeActor;
-            // Suono PRIMA del messaggio (false) per massima compatibilità
-            speak(`${pName} è tua!`, "Ka-ching.mp3", false);
-        } else {
-            speak("Soldi insufficienti.");
-        }
-    }
-    return;
-}
+            // COMANDO: ACQUISTA UNA PROPRIETÀ
+            if (msg.includes("acquista") || msg.includes("compra")) {
+                for (let p in gameState.properties) {
+                    if (msg.includes(p)) {
+                        let prop = gameState.properties[p];
+                        if (prop.owner) return speak(`${prop.owner} possiede ${p}.`);
+                        if (gameState.players[activeActor].balance >= prop.price) {
+                            updateBalance(activeActor, -prop.price);
+                            prop.owner = activeActor;
+                            speak(`${p}, è tua per ${formatMoneyForSpeech(prop.price)} banconote del monopoly!`, "Ka-ching", false, 2000);
+                        } else { speak("Non hai abbastanza denaro."); }
+                        return;
+                    }
+                }
+            }
 
             // --- NUOVI COMANDI: GESTIONE PROPRIETÀ SENZA TRANSAZIONI ---
 
@@ -1120,24 +1125,21 @@
             }
 
             // COMANDO: TOGLI IPOTECA (Paghi metà valore + 10%)
-         
-if (msg.includes("togli") && msg.includes("ipoteca")) {
-    let pName = Object.keys(gameState.properties).find(p => msg.includes(p));
-    if (pName) {
-        let prop = gameState.properties[pName];
-        if (!prop.mortgaged) return speak("Non è ipotecata.");
-        
-        // Math.round corregge l'errore matematico di JavaScript (1.1 diventa un numero intero pulito)
-        let cost = Math.round((prop.price / 2) * 1.1);
-        
-        if (gameState.players[activeActor].balance >= cost) {
-            updateBalance(activeActor, -cost);
-            prop.mortgaged = false;
-            speak(`Ipoteca tolta pagando ${cost}`, "Ka-ching.mp3", true);
-        } else speak("Soldi insufficienti.");
-    }
-    return;
-}
+            if (msg.includes("togli") || msg.includes("cancella") || msg.includes("rimuovi") || msg.includes("ripaga") && msg.includes("ipoteca")) {
+                for (let p in gameState.properties) {
+                    if (msg.includes(p)) {
+                        let prop = gameState.properties[p];
+                        if (!prop.mortgaged) return speak("Non è ipotecata.");
+                        let val = prop.price * 0.55;
+                        if (gameState.players[activeActor].balance >= val) {
+                            updateBalance(activeActor, -val);
+                            prop.mortgaged = false;
+                            speak(`Ipoteca tolta da ${p} pagando ${formatMoneyForSpeech(val)} banconote del monopoly.`);
+                        } else { speak("Non hai abbastanza denaro."); }
+                        return;
+                    }
+                }
+            }
 
 
             // COMANDI GENERICI: PAGA O INCASSA DALLA BANCA
@@ -1278,8 +1280,3 @@ if (msg.includes("togli") && msg.includes("ipoteca")) {
 </body>
 
 </html>
-
-
-
-
-
