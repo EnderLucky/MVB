@@ -1028,50 +1028,137 @@
                 return;
             }
 
-            // COMANDO: COSTRUZIONE CASE/ALBERGHI
-            // Deve contenere un verbo (costruisci/metti/ecc) E l'edificio (casa/albergo)
+            // --- LOGICA COSTRUZIONE AVANZATA (CASE E ALBERGHI) ---
             const isBuilding = msg.includes("costrui") || msg.includes("metti") || msg.includes("compra") || msg.includes("fai");
+            const colorSets = ["marrone", "azzurro", "rosa", "arancio", "rosso", "giallo", "verde", "blu"];
 
-            // Costruzione Case
+            // 1. GESTIONE COSTRUZIONE CASE
             if (isBuilding && (msg.includes("casa") || msg.includes("abitazione"))) {
+                let targetSet = colorSets.find(c => msg.includes(c));
+
+                // Caso A: Costruzione su intera SERIE (Colore)
+                if (targetSet) {
+                    let propsInSet = Object.entries(gameState.properties).filter(([name, p]) => p.set === targetSet);
+                    let missing = propsInSet.filter(([name, p]) => p.owner !== activeActor).map(([name, p]) => name);
+
+                    if (missing.length > 0) {
+                        speak(`Non puoi costruire. Per la serie ${targetSet} ti mancano: ${missing.join(", ")}.`);
+                        return;
+                    }
+
+                    let builtOn = [];
+                    let totalCost = 0;
+
+                    propsInSet.forEach(([name, prop]) => {
+                        if (prop.houses < 4) {
+                            if (gameState.players[activeActor].balance >= (totalCost + prop.buildCost)) {
+                                prop.houses++;
+                                totalCost += prop.buildCost;
+                                builtOn.push(name);
+                            }
+                        }
+                    });
+
+                    if (builtOn.length > 0) {
+                        updateBalance(activeActor, -totalCost);
+                        speak(`Metti una casa su ${builtOn.join(", ")}. Costo totale: ${formatMoneyForSpeech(totalCost)} banconote del monopoly.`, "build", false, 3000);
+                    } else {
+                        speak(`Tutte le proprietà ${targetSet} hanno già 4 case o non hai abbastanza denaro.`);
+                    }
+                    return;
+                }
+
+                // Caso B: Costruzione su SINGOLA proprietà
                 for (let p in gameState.properties) {
                     if (msg.includes(p)) {
                         let prop = gameState.properties[p];
                         if (prop.set === "stazione" || prop.set === "società") return speak("Non si può costruire qui.");
-                        if (prop.owner !== activeActor) return speak("Questa proprietà non è tua.");
-                        if (!hasFullSet(activeActor, prop.set)) return speak("Devi avere la serie completa.");
-                        if (prop.houses >= 4) return speak("Hai già 4 case.");
+                        if (prop.owner !== activeActor) return speak(`Non possiedi ${p}, appartiene al giocatore ${prop.owner}.`);
+
+                        if (!hasFullSet(activeActor, prop.set)) {
+                            let missing = Object.entries(gameState.properties)
+                                .filter(([name, pt]) => pt.set === prop.set && pt.owner !== activeActor)
+                                .map(([name, pt]) => name);
+                            speak(`Ti manca ${missing.join(", ")} per completare la serie ${prop.set}.`);
+                            return;
+                        }
+
+                        if (prop.houses >= 4) return speak(`Su ${p} ci sono già 4 case. Di' "costruire un albergo" per procedere.`);
 
                         if (gameState.players[activeActor].balance >= prop.buildCost) {
                             updateBalance(activeActor, -prop.buildCost);
                             prop.houses++;
-                            // Riproduce build.mp3 PRIMA del messaggio (false)
-                            speak(`metti una casa su ${p}.`, "build", false, 3000);
-                        } else { speak("Non hai abbastanza denaro."); }
+                            speak(`Metti una casa su ${p}.`, "build", false, 3000);
+                        } else {
+                            speak(`Ti servono ${formatMoneyForSpeech(prop.buildCost)} per una mettere casa qui.`);
+                        }
                         return;
                     }
                 }
             }
-            // Costruzione Alberghi
+
+            // 2. GESTIONE COSTRUZIONE ALBERGHI (Con acquisto automatico case mancanti)
             if (isBuilding && (msg.includes("albergo") || msg.includes("hotel"))) {
+                let targetSet = colorSets.find(c => msg.includes(c));
+
+                // Caso A: Alberghi su intera SERIE (Colore)
+                if (targetSet) {
+                    let propsInSet = Object.entries(gameState.properties).filter(([name, p]) => p.set === targetSet);
+                    let missing = propsInSet.filter(([name, p]) => p.owner !== activeActor).map(([name, p]) => name);
+
+                    if (missing.length > 0) {
+                        speak(`Non puoi costruire. Per la serie ${targetSet} ti mancano: ${missing.join(", ")}.`);
+                        return;
+                    }
+
+                    let builtOn = [];
+                    let totalCost = 0;
+
+                    propsInSet.forEach(([name, prop]) => {
+                        if (prop.houses < 5) {
+                            let housesToBuy = 5 - prop.houses;
+                            let cost = housesToBuy * prop.buildCost;
+
+                            if (gameState.players[activeActor].balance >= (totalCost + cost)) {
+                                prop.houses = 5;
+                                totalCost += cost;
+                                builtOn.push(name);
+                            }
+                        }
+                    });
+
+                    if (builtOn.length > 0) {
+                        updateBalance(activeActor, -totalCost);
+                        speak(`Metti gli hotel su: ${builtOn.join(", ")}. Ho incluso il costo delle case mancanti per arrivare all'hotel. Totale: ${formatMoneyForSpeech(totalCost)} banconote.`, "build", false, 3000);
+                    } else {
+                        speak(`Non hai abbastanza denaro o hai già tutti gli hotel sulla serie ${targetSet}.`);
+                    }
+                    return;
+                }
+
+                // Caso B: Albergo su SINGOLA proprietà
                 for (let p in gameState.properties) {
                     if (msg.includes(p)) {
                         let prop = gameState.properties[p];
-                        if (prop.owner !== activeActor) return speak("Non sei il proprietario.");
-                        if (prop.houses !== 4) return speak("Servono prima 4 case.");
+                        if (prop.owner !== activeActor) return speak(`${p} non è tua.`);
+                        if (!hasFullSet(activeActor, prop.set)) return speak("Devi avere la serie completa.");
+                        if (prop.houses === 5) return speak(`C'è già un hotel su ${p}.`);
 
-                        if (gameState.players[activeActor].balance >= prop.buildCost) {
-                            updateBalance(activeActor, -prop.buildCost);
+                        let housesToBuy = 5 - prop.houses;
+                        let totalCost = housesToBuy * prop.buildCost;
+
+                        if (gameState.players[activeActor].balance >= totalCost) {
+                            updateBalance(activeActor, -totalCost);
                             prop.houses = 5;
-                            // Riproduce build.mp3 PRIMA del messaggio (false)
-                            speak(`metti un hotel su ${p}.`, "build", false);
-                        } else { speak("Non hai abbastanza denaro."); }
+                            let text = housesToBuy > 1 ? `Ho aggiunto le case mancanti e l'hotel su ${p}.` : `Hotel costruito su ${p}.`;
+                            speak(`${text} Spesa totale: ${formatMoneyForSpeech(totalCost)}.`, "build", false, 3000);
+                        } else {
+                            speak(`Ti mancano i fondi: l'operazione costa ${formatMoneyForSpeech(totalCost)}.`);
+                        }
                         return;
                     }
                 }
             }
-
-
             // COMANDO: DEMOLIZIONE (Vendere edifici per metà prezzo)
             const isDemolishing = msg.includes("vendi") || msg.includes("togli") || msg.includes("demolisci") || msg.includes("rimuovi");
             if (isDemolishing && (msg.includes("casa") || msg.includes("albergo") || msg.includes("hotel"))) {
@@ -1280,4 +1367,3 @@
 </body>
 
 </html>
-
