@@ -396,7 +396,10 @@
                 text: "Carta imprevisti: Ti piace giocare lentamente? Bene! Al tuo prossimo turno tira solo un dado!", weight: 1,
             },
             {
-                text: "Carta imprevisti: Sei stato querelato per aver riso alle battute su Totti! Mo devi annà ar tribunale, pagare 'na murta de 150000 sordi e finì ar gabbio!", weight: 1,
+                text: "Carta imprevisti: Sei stato querelato per aver riso alle battute su Totti! Mo devi annà ar tribunale, devi pagà 'na murta de 150000 sordi e hai da finì ar gabbio!", weight: 1,
+                effect: () => {
+                    updateBalance(activeActor, -150000);
+                }
             },
             {
                 text: "Carta imprevisti: Vuoi costruire un computer ma le RAM costano troppo! Paga 600000!", weight: 1,
