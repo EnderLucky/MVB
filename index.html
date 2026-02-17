@@ -364,13 +364,13 @@
         // --- DATABASE CARTE IMPREVISTI (senza tracciamento carte speciali) ---
         const imprevisti = [
             {
-                text: "Carta imprevisti: Andate fino al Via ed incassate 2000000!",
+                text: "Carta imprevisti: Andate fino al Via ed incassate 2000000!", weight: 1,
                 effect: () => {
                     updateBalance(activeActor, 2000000);
                 }
             },
             {
-                text: "Carta imprevisti: Hai riparato le tue case: paga 600000 per ogni casa e 1200000 per ogni albergo!",
+                text: "Carta imprevisti: Hai riparato le tue case: paga 600000 per ogni casa e 1200000 per ogni albergo!", weight: 1,
                 effect: () => {
                     const { houses, hotels } = countPlayerBuildings(activeActor);
                     const total = houses * 600000 + hotels * 1200000;
@@ -378,45 +378,70 @@
                 }
             },
             {
-                text: "Carta imprevisti: Errore della banca a tuo favore: ritira 2000000!",
+                text: "Carta imprevisti: Errore della banca a tuo favore: ritira 2000000!", weight: 1,
                 effect: () => {
                     updateBalance(activeActor, 2000000);
                 }
             },
             {
-                text: "Carta imprevisti: Fai 3 passi indietro",
+                text: "Carta imprevisti: Fai 3 passi indietro", weight: 1,
             },
             {
-                text: "Carta imprevisti: Fai 9 passi indietro",
+                text: "Carta imprevisti: Fai 9 passi indietro", weight: 1,
             },
             {
-                text: "Carta imprevisti: Vai fino a via Accademia, fammi sapere se passi dal via!",
+                text: "Carta imprevisti: Usa il comando: prendere il treno", weight: 1,
             },
             {
-                text: "Carta imprevisti: Vai fino al parco della vittoria!",
+                text: "Carta imprevisti: Ti piace giocare lentamente? Bene! Al tuo prossimo turno tira solo un dado!", weight: 1,
             },
             {
-                text: "Carta imprevisti: Vai fino alla società più vicina! Fammi sapere se passi dal via! Se appartiene a qualcun altro, paga 10000 volte il valore dei dadi!",
+                text: "Carta imprevisti: Vuoi costruire un computer ma le RAM costano troppo! Paga 600000!", weight: 1,
+                effect: () => {
+                    updateBalance(activeActor, -600000);
+                }
             },
             {
-                text: "Carta imprevisti: Vai fino alla stazione più vicina! Fammi sapere se passi dal via! Se appartiene a qualcun altro, paga il doppio dell'affitto!",
+                text: "Carta imprevisti: Scegli una proprietà da mettere all'asta! Puoi tirarti indietro solo se non ce ne sono più di disponibili! Come incentivo ricevi 750000!", weight: 1,
+                effect: () => {
+                    updateBalance(activeActor, 750000);
+                }
             },
             {
-                text: "Carta imprevisti: Sei diventato molto popolare, il sindaco ti ha dato una carta esci gratis di prigione! Tienila per il futuro o scambiala con qualcuno!",
+                text: "Carta imprevisti: Ti hanno affidato l'incarico di manager per una ditta di demolizioni. Scegli una proprietà non tua su cui puoi far demolire un edificio, dopodichè i soldi che il giocatore prenderà dalla vendita dell'edificio spetteranno a te!", weight: 1,
             },
             {
-                text: "Carta imprevisti: Mi piace il tuo stile! prendi una carta esci gratis di prigione! Tienila per il futuro o scambiala con qualcuno!",
+                text: "Carta imprevisti: tutti gli altri giocatori devono dire: carta imprevisti!", weight: 1,
             },
             {
-                text: "Carta imprevisti: Hai usato un'app per usare il Monopoly senza licenza di Hasbro? Vai dritto in prigione senza passare dal Via!",
-
+                text: "Carta imprevisti: Vai fino a via Accademia, fammi sapere se passi dal via!", weight: 1,
             },
             {
-                text: "Carta imprevisti: Mi hai insultato su Monopoly Voice Banking? Vai dritto in prigione e vergognati!",
-
+                text: "Carta imprevisti: Vai fino al parco della vittoria!", weight: 1,
             },
             {
-                text: "Carta imprevisti: Buon compleanno! Ricevete 250000 da ogni giocatore.",
+                text: "Carta imprevisti: Vai fino alla società più vicina! Fammi sapere se passi dal via! Se appartiene a qualcun altro, paga 10000 volte il valore dei dadi!", weight: 1,
+            },
+            {
+                text: "Carta imprevisti: Vai fino alla stazione più vicina! Fammi sapere se passi dal via! Se appartiene a qualcun altro, paga il doppio dell'affitto!", weight: 1,
+            },
+            {
+                text: "Carta imprevisti: Sei diventato molto popolare, il sindaco ti ha dato una carta esci gratis di prigione! Tienila per il futuro o scambiala con qualcuno!", weight: 1,
+            },
+            {
+                text: "Carta imprevisti: Mi piace il tuo stile! prendi una carta esci gratis di prigione! Tienila per il futuro o scambiala con qualcuno!", weight: 1,
+            },
+            {
+                text: "Carta imprevisti: Hai usato un'app per usare il Monopoly senza licenza di Hasbro? Vai dritto in prigione senza passare dal Via!", weight: 1,
+            },
+            {
+                text: "Carta imprevisti: Mi hai insultato su Monopoly Voice Banking? Vai dritto in prigione e vergognati!", weight: 1,
+            },
+            {
+                text: "Carta imprevisti: Riendiamo il gioco più divertente! Nel tuo prossimo turno tira 3 dadi.", weight: 1,
+            },
+            {
+                text: "Carta imprevisti: Buon compleanno! Ricevete 250000 da ogni giocatore.", weight: 1,
                 effect: () => {
                     const otherPlayers = selectedColors.filter(c =>
                         c !== activeActor && !gameState.bankruptPlayers.includes(c)
@@ -431,32 +456,32 @@
                 }
             },
             {
-                text: "Carta imprevisti: È arrivato il rimborso delle tasse: incassate 500000.",
+                text: "Carta imprevisti: È arrivato il rimborso delle tasse: incassa 500000.", weight: 1,
                 effect: () => {
                     updateBalance(activeActor, 500000);
                 }
             },
             {
-                text: "Carta imprevisti: Scade l'assicurazione sulla vita: incassate 1000000.",
+                text: "Carta imprevisti: Scade l'assicurazione sulla vita: incassa 1000000.", weight: 1,
                 effect: () => {
                     updateBalance(activeActor, 1000000);
                 }
             },
             {
-                text: "Carta imprevisti: Sembra tu abbia mal di gola, ti ho fissato un appuntamento dal dottore, purtroppo la sanità pubblica non vi accetta prima del 2054, pagate 1000000.",
+                text: "Carta imprevisti: Sembra tu abbia mal di gola, ti ho fissato un appuntamento dal dottore, purtroppo la sanità pubblica non vi accetta prima del 2054, pagate 1000000.", weight: 1,
                 effect: () => {
                     updateBalance(activeActor, -1000000);
                 }
             },
             {
-                text: "Carta imprevisti: Avete fatto il corso per ambienti in spazi confinati? Tutti gli imprenditori l'hanno fatto, come potresti vivere senza! l'iscrizione costa 1500000.",
+                text: "Carta imprevisti: Avete fatto il corso per ambienti in spazi confinati? Tutti gli imprenditori l'hanno fatto! Come potresti vivere senza! paghi 1500000 per l'iscrizione.", weight: 1,
                 effect: () => {
 
                     updateBalance(activeActor, -1500000);
                 }
             },
             {
-                text: "Carta imprevisti: Dovresti farti doppiare da un altro giocatore, pago ogni giocatore 250000",
+                text: "Carta imprevisti: Dovresti farti doppiare da un altro giocatore, pago ogni giocatore 250000", weight: 1,
                 effect: () => {
                     const recipients = selectedColors.filter(c =>
                         c !== activeActor && !gameState.bankruptPlayers.includes(c)
@@ -469,13 +494,13 @@
                 }
             },
             {
-                text: "Carta imprevisti: Ricevete una consulenza: incassi 500000.",
+                text: "Carta imprevisti: Ricevete una consulenza: incassi 500000.", weight: 1,
                 effect: () => {
                     updateBalance(activeActor, 500000);
                 }
             },
             {
-                text: "Carta imprevisti: Avete pagato il notaio per gli edifici costruiti? pagate subito 500000 per ogni casa e 1000000 per ogni albergo.",
+                text: "Carta imprevisti: Hai pagato il notaio per gli edifici costruiti? pagate subito 500000 per ogni casa e 1000000 per ogni albergo.", weight: 1,
                 effect: () => {
                     const { houses, hotels } = countPlayerBuildings(activeActor);
                     const total = houses * 500000 + hotels * 1000000;
@@ -483,29 +508,47 @@
                 }
             },
             {
-                text: "Carta imprevisti: Avete vinto un premio di bellezza: incassi 100000.",
+                text: "Carta imprevisti: Hai vinto un premio di bellezza: incassi 100000.", weight: 1,
                 effect: () => {
                     updateBalance(activeActor, 100000);
                 }
             },
             {
-                text: "Carta imprevisti: Erediti 1000000.",
+                text: "Carta imprevisti: Erediti 1000000.", weight: 1,
                 effect: () => {
                     updateBalance(activeActor, 1000000);
                 }
             },
             // --- NUOVE CARTE IMPREVISTI DIVERTENTI E BILANCIATE ---
             {
-                text: "Carta imprevisti: Hai vinto la lotteria nazionale! Incassi 3000000.",
+                text: "Carta imprevisti: Hai vinto la lotteria nazionale! Incassi 3000000.", weight: 1,
                 effect: () => {
                     updateBalance(activeActor, 3000000);
                 }
             },
             {
-                text: "Carta imprevisti: Hai dato da mangiare al gatto? Vai a farlo subito! Salta il tuo prossimo turno.",
+                text: "Carta imprevisti: Hai dato da mangiare al gatto? Vai a farlo subito! Salta il tuo prossimo turno.", weight: 1,
             },
             {
-                text: "Carta imprevisti: Sei stato eletto sindaco per un giorno! Ogni giocatore ti paga 100000.",
+                text: "Carta imprevisti: Hai già dato da mangiare al gatto? Bene! Ritira i dadi.", weight: 1,
+            },
+            {
+                text: "Carta imprevisti: Un giocatore ti querela per calunnia, scegli un giocatore a cui dare 500000 usando il comando: paga.", weight: 1,
+            },
+            {
+                text: "Carta imprevisti: Hai partecipato alla ruota della fortuna e Gerry Scotti ti ha donato 800000.", weight: 1,
+                effect: () => {
+                    updateBalance(activeActor, 800000);
+                }
+            },
+            {
+                text: "Carta imprevisti: Il tuo computer è stato infettato da un virus, devi pagare il pizzo, anche chiamato antivirus costa 750000.", weight: 1,
+                effect: () => {
+                    updateBalance(activeActor, -750000);
+                }
+            },
+            {
+                text: "Carta imprevisti: Sei stato eletto sindaco per un giorno! Ogni giocatore ti paga 100000.", weight: 1,
                 effect: () => {
                     const otherPlayers = selectedColors.filter(c =>
                         c !== activeActor && !gameState.bankruptPlayers.includes(c)
@@ -520,7 +563,7 @@
                 }
             },
             {
-                text: "Carta imprevisti: Hai investito in criptovalute e hai perso tutto! Perdi 1500000.",
+                text: "Carta imprevisti: Hai investito in criptovalute e hai perso tutto! Perdi 1500000.", weight: 1,
                 effect: () => {
                     if (gameState.players[activeActor].balance < 1500000) {
                         return;
@@ -529,6 +572,44 @@
                 }
             }
         ];
+
+
+        function drawImprevisto() {
+            if (!activeActor) return;
+
+            let totalWeight = imprevisti.reduce((sum, card) => sum + (card.weight || 1), 0);
+            let random = Math.random() * totalWeight;
+            let currentSum = 0;
+            let cardIndex = 0;
+
+            for (let i = 0; i < imprevisti.length; i++) {
+                currentSum += (imprevisti[i].weight || 1);
+                if (random <= currentSum) {
+                    cardIndex = i;
+                    break;
+                }
+            }
+
+            const card = imprevisti[cardIndex];
+            card.weight = 0.25;
+
+            let finalText = card.text;
+            if (card.text === "VAI_A_PROPRIETA_CASUALE") {
+                finalText = `Carta imprevisti: Vai fino a ${getRandomProperty()}, fammi sapere se passi dal via!`;
+            }
+
+            const ancoraNuove = imprevisti.filter(c => c.weight === 1);
+            if (ancoraNuove.length === 0) {
+                imprevisti.forEach(c => c.weight = 1);
+            }
+
+            const t = finalText.toLowerCase();
+            const isPositive = t.includes("incass") || t.includes("ritir") || t.includes("ricev") || t.includes("vinc") || t.includes("eredit");
+
+            speak(finalText, isPositive ? "Ka-ching" : null, true);
+            setTimeout(() => { if (card.effect) card.effect(); }, 100);
+        }
+
 
         // VARIABILI GLOBALI PER IL FUNZIONAMENTO
         let selectedColors = []; // Giocatori scelti nel setup
@@ -731,34 +812,20 @@
             return eligibleProps[randomIndex][0]; // Restituisce solo il nome
         }
 
-        // PESCA UNA CARTA IMPREVISTO CASUALE
-        function drawImprevisto() {
-            if (!activeActor) return;
-            const card = imprevisti[Math.floor(Math.random() * imprevisti.length)];
-
-            // Se la carta contiene "incassa", "ritira" o "ricevete", usa il Ka-ching alla fine
-            const isPositive = card.text.toLowerCase().includes("incassa") ||
-                card.text.toLowerCase().includes("ritira") ||
-                card.text.toLowerCase().includes("ricevete") ||
-                card.text.toLowerCase().includes("Ogni giocatore ti paga") ||
-                card.text.toLowerCase().includes("incassi") ||
-                card.text.toLowerCase().includes("Erediti");
-            speak(card.text, isPositive ? "Ka-ching" : null, true);
-            setTimeout(() => { if (card.effect) card.effect(); }, 200);
-        }
+        // FUNZIONE PESCA AGGIORNATA: SISTEMA AD ESAURIMENTO (0.25 persitente)
 
         // --- LA LOGICA CENTRALE: COSA FARE QUANDO L'UTENTE PARLA ---
         function processCommand(msg) {
 
             // COMANDO: PASSA DAL VIA
-            if (msg.includes("passa") && msg.includes("via")) {
+            if (msg.includes("pass") && msg.includes("via")) {
                 updateBalance(activeActor, 2000000);
                 speak(`Ecco a te 2000000!`, "Ka-ching", true, 500);
                 return;
             }
 
             // COMANDO: PRENDERE IL TRENO
-            if (msg.includes("prend") && msg.includes("treno")) {
+            if (msg.includes("treno")) {
 
                 speak(`In carrozza! Vai fino a ${getRandomProperty()}.`, "train", false, 3000);
                 return;
@@ -976,7 +1043,7 @@
 
                         updateBalance(activeActor, -amount);
                         updateBalance(prop.owner, amount);
-                        speak(`Hai pagato al giocatore ${prop.owner}, ${formatMoneyForSpeech(amount)}.`, "Ka-ching", false, 2000);
+                        speak(`Hai pagato al giocatore ${prop.owner}, ${formatMoneyForSpeech(amount)} banconote del monopoly.`, "Ka-ching", false, 2000);
                         return;
                     }
                 }
