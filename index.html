@@ -291,12 +291,15 @@
         <div id="btn-verde" class="player-btn btn-verde" onclick="activate('verde')"></div>
 
         <!-- Balance Chips (Spostate e Ruotate) -->
-        <div id="card-blu" class="balance-card"><span>BLU</span><span class="money" id="bal-blu">15 milioni</span></div>
-        <div id="card-giallo" class="balance-card"><span>GIALLO</span><span class="money" id="bal-giallo">15
-                milioni</span></div>
-        <div id="card-rosso" class="balance-card"><span>ROSSO</span><span class="money" id="bal-rosso">15 milioni</span>
+        <div id="card-blu" class="balance-card"><span>BLU</span><span class="money" id="bal-blu">15,00 milioni</span>
         </div>
-        <div id="card-verde" class="balance-card"><span>VERDE</span><span class="money" id="bal-verde">15 milioni</span>
+        <div id="card-giallo" class="balance-card"><span>GIALLO</span><span class="money" id="bal-giallo">15,00
+                milioni</span></div>
+        <div id="card-rosso" class="balance-card"><span>ROSSO</span><span class="money" id="bal-rosso">15,00
+                milioni</span>
+        </div>
+        <div id="card-verde" class="balance-card"><span>VERDE</span><span class="money" id="bal-verde">15,00
+                milioni</span>
         </div>
     </div>
 
@@ -724,6 +727,7 @@
             // Crea il portafoglio per ogni giocatore scelto
             selectedColors.forEach(color => {
                 gameState.players[color] = { balance: 15000000 }; // 15 Milioni iniziali
+                document.getElementById(`bal-${color}`).textContent = formatMoney(15000000);
                 document.getElementById(`card-${color}`).classList.add('active');
             });
 
@@ -1329,15 +1333,17 @@
             document.getElementById(`bal-${player}`).textContent = formatMoney(gameState.players[player].balance);
         }
 
-        // TRASFORMA I NUMERI IN TESTO LEGGIBILE (es: 1500000 -> "1.5 milioni") - PER VISUALIZZAZIONE
+        // TRASFORMA I NUMERI IN TESTO LEGGIBILE (es: 1500000 -> "1,50 milioni") - PER VISUALIZZAZIONE
         function formatMoney(n) {
             if (n >= 1000000) {
-                let val = (n / 1000000).toFixed(1);
-                val = val.endsWith(".0") ? val.slice(0, -2) : val; // Toglie lo .0 inutile
-                return val + (val === "1" ? " milione" : " milioni");
+                let val = (n / 1000000).toFixed(2).replace('.', ',');
+                return val + (val === "1,00" ? " milione" : " milioni");
             }
-            if (n >= 1000) return (n / 1000) + " mila";
-            return n;
+            if (n >= 1000) {
+                let val = (n / 1000).toFixed(2).replace('.', ',');
+                return val + " mila";
+            }
+            return n.toLocaleString('it-IT');
         }
 
         // TRASFORMA I NUMERI IN TESTO PER LA SINTESI VOCALE (solo numeri interi)
