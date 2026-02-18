@@ -4,9 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Monopoly Voice Banking - Commentato</title>
+    <title>Monopoly Voice Banking - 18:9 Layout</title>
     <style>
-        /* DEFINIZIONE VARIABILI COLORE (I colori ufficiali dei giocatori) */
         :root {
             --bg-color: #050505;
             --unit-bg: #151515;
@@ -16,7 +15,6 @@
             --verde: #2ecc71;
         }
 
-        /* RESET E STILE BASE DEL CORPO PAGINA */
         body {
             background-color: var(--bg-color);
             color: white;
@@ -29,10 +27,8 @@
             height: 100vh;
             overflow: hidden;
             touch-action: manipulation;
-            /* Evita lo zoom fastidioso su mobile */
         }
 
-        /* SCHERMATA DI SELEZIONE GIOCATORI (Inizialmente copre tutto) */
         #setup-overlay {
             position: fixed;
             inset: 0;
@@ -42,7 +38,6 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            transition: 0.8s ease;
         }
 
         .setup-card {
@@ -61,7 +56,6 @@
             margin: 25px 0;
         }
 
-        /* I PULSANTI ROTONDI NEL SETUP */
         .chip {
             padding: 20px;
             border-radius: 15px;
@@ -77,7 +71,7 @@
             transform: scale(1.05);
         }
 
-        /* IL "CERCHIO" CENTRALE DEL DISPOSITIVO */
+        /* CONTENITORE CENTRALE */
         .banker-wrapper {
             position: relative;
             width: 320px;
@@ -89,8 +83,8 @@
 
         .banker-unit {
             position: relative;
-            width: 240px;
-            height: 240px;
+            width: 220px;
+            height: 220px;
             background: var(--unit-bg);
             border-radius: 50%;
             border: 8px solid #222;
@@ -98,14 +92,13 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             z-index: 5;
             box-shadow: inset 0 0 40px #000;
             text-align: center;
             cursor: pointer;
+            transition: 0.5s;
         }
 
-        /* EFFETTI LUCE QUANDO IL BANCHIERE ASCOLTA UN GIOCATORE */
         .listening-blu {
             border-color: var(--blu) !important;
             box-shadow: 0 0 50px var(--blu), inset 0 0 20px var(--blu);
@@ -126,108 +119,130 @@
             box-shadow: 0 0 50px var(--verde), inset 0 0 20px var(--verde);
         }
 
-        /* TESTI DENTRO L'UNITÀ CENTRALE */
         #status-text {
             color: #555;
-            font-size: 0.7rem;
+            font-size: 0.6rem;
             text-transform: uppercase;
             letter-spacing: 2px;
-            margin-bottom: 5px;
         }
 
         #transcript {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             font-weight: bold;
-            padding: 0 20px;
-            min-height: 2.5rem;
+            padding: 0 15px;
             color: #fff;
             text-transform: uppercase;
         }
 
-        /* PULSANTI DEI GIOCATORI SUL PERIMETRO */
+        /* PULSANTI GIOCATORI CON ANIMAZIONE RIPRISTINATA */
         .player-btn {
             position: absolute;
-            width: 70px;
-            height: 70px;
+            width: 65px;
+            height: 65px;
             border-radius: 50%;
             cursor: pointer;
-            transition: 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
             z-index: 10;
             border: 4px solid rgba(0, 0, 0, 0.3);
+            /* L'animazione elastica */
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
         }
 
-        /* POSIZIONAMENTO DEI PULSANTI (Nord, Sud, Ovest, Est) */
         .btn-blu {
-            top: -10px;
+            top: -15px;
             left: 50%;
             transform: translateX(-50%);
             background: var(--blu);
         }
 
         .btn-giallo {
-            bottom: -10px;
+            bottom: -15px;
             left: 50%;
             transform: translateX(-50%);
             background: var(--giallo);
         }
 
         .btn-rosso {
-            left: -10px;
+            left: -15px;
             top: 50%;
             transform: translateY(-50%);
             background: var(--rosso);
         }
 
         .btn-verde {
-            right: -10px;
+            right: -15px;
             top: 50%;
             transform: translateY(-50%);
             background: var(--verde);
         }
 
-        /* EFFETTO QUANDO CLICCHI UN GIOCATORE (Si sposta al centro e si ingrandisce) */
+        /* EFFETTO ZOOM QUANDO IL PULSANTE È ATTIVO */
         .player-btn.active-focus {
             top: 50% !important;
             left: 50% !important;
-            transform: translate(-50%, -50%) scale(1.6) !important;
-            z-index: 100;
+            transform: translate(-50%, -50%) scale(1.7) !important;
+            z-index: 1000 !important;
             box-shadow: 0 0 40px rgba(255, 255, 255, 0.4);
         }
 
-        /* TABELLA SALDI IN BASSO */
-        #balances {
-            margin-top: 60px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-        }
-
+        /* CHIP DEI SOLDI (SPOSTATI E RUOTATI PER 18:9) */
         .balance-card {
+            position: absolute;
             background: #111;
-            padding: 10px;
-            border-radius: 12px;
+            padding: 6px 10px;
+            border-radius: 8px;
             text-align: center;
             display: none;
-            border-bottom: 4px solid transparent;
-            min-width: 95px;
+            border-bottom: 3px solid transparent;
+            min-width: 85px;
+            font-size: 0.7rem;
+            z-index: 20;
         }
 
         .balance-card.active {
             display: block;
         }
 
+        .money {
+            display: block;
+            font-weight: bold;
+            color: #fff;
+            margin-top: 2px;
+        }
+
+        #card-blu {
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%) rotate(180deg);
+            border-color: var(--blu);
+        }
+
+        #card-giallo {
+            bottom: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-color: var(--giallo);
+        }
+
+        /* Rosso e Verde posizionati lateralmente per schermi larghi */
+        #card-rosso {
+            left: -135px;
+            top: 50%;
+            transform: translateY(-50%) rotate(90deg);
+            border-color: var(--rosso);
+        }
+
+        #card-verde {
+            right: -135px;
+            top: 50%;
+            transform: translateY(-50%) rotate(-90deg);
+            border-color: var(--verde);
+        }
+
         .balance-card.bancarotta {
-            opacity: 0.4;
+            opacity: 0.3;
             text-decoration: line-through;
-            border-color: #666 !important;
         }
 
-        .balance-card.bancarotta .money {
-            color: #666;
-        }
-
-        /* CONSOLE PER COMANDI SCRITTI (Debug/Manuale) */
         #debug-console {
             display: none;
             position: absolute;
@@ -237,39 +252,9 @@
             background: rgba(0, 0, 0, 0.95);
             padding: 20px;
             border-radius: 20px;
-            border: 2px solid #444;
-            z-index: 200;
+            z-index: 2000;
             flex-direction: column;
             gap: 10px;
-        }
-
-        #debug-input {
-            background: #222;
-            border: 1px solid #444;
-            color: white;
-            padding: 12px;
-            border-radius: 8px;
-            width: 220px;
-        }
-
-        #debug-btn {
-            background: #fff;
-            color: #000;
-            border: none;
-            padding: 10px;
-            cursor: pointer;
-            border-radius: 8px;
-            font-weight: bold;
-        }
-
-        button#start-btn {
-            background: white;
-            color: black;
-            border: none;
-            padding: 15px 40px;
-            border-radius: 30px;
-            font-weight: bold;
-            cursor: pointer;
         }
     </style>
 </head>
@@ -292,36 +277,34 @@
         </div>
     </div>
 
-    <!-- UI: CONSOLE NASCOSTA -->
-    <div id="debug-console">
-        <div style="font-size: 0.8rem; color: #aaa; text-align:center">COMANDO TESTUALE</div>
-        <input type="text" id="debug-input" placeholder="Scrivi qui...">
-        <button id="debug-btn" onclick="sendManualCommand()">ESEGUI</button>
-    </div>
-
-    <!-- UI: UNITÀ BANCHIERE -->
+    <!-- UI: UNITÀ BANCHIERE + PULSANTI + CHIP SOLDI -->
     <div class="banker-wrapper">
         <div class="banker-unit" id="unit">
             <div id="status-text">Pronto</div>
             <div id="transcript">Tocca un colore</div>
         </div>
+
         <!-- Pulsanti Giocatori -->
         <div id="btn-blu" class="player-btn btn-blu" onclick="activate('blu')"></div>
         <div id="btn-giallo" class="player-btn btn-giallo" onclick="activate('giallo')"></div>
         <div id="btn-rosso" class="player-btn btn-rosso" onclick="activate('rosso')"></div>
         <div id="btn-verde" class="player-btn btn-verde" onclick="activate('verde')"></div>
+
+        <!-- Balance Chips (Spostate e Ruotate) -->
+        <div id="card-blu" class="balance-card"><span>BLU</span><span class="money" id="bal-blu">15 milioni</span></div>
+        <div id="card-giallo" class="balance-card"><span>GIALLO</span><span class="money" id="bal-giallo">15
+                milioni</span></div>
+        <div id="card-rosso" class="balance-card"><span>ROSSO</span><span class="money" id="bal-rosso">15 milioni</span>
+        </div>
+        <div id="card-verde" class="balance-card"><span>VERDE</span><span class="money" id="bal-verde">15 milioni</span>
+        </div>
     </div>
 
-    <!-- UI: VISUALIZZAZIONE SALDI -->
-    <div id="balances">
-        <div id="card-blu" class="balance-card" style="border-color:var(--blu)"><span>BLU</span> <span class="money"
-                id="bal-blu">15 milioni</span></div>
-        <div id="card-giallo" class="balance-card" style="border-color:var(--giallo)"><span>GIALLO</span> <span
-                class="money" id="bal-giallo">15 milioni</span></div>
-        <div id="card-rosso" class="balance-card" style="border-color:var(--rosso)"><span>ROSSO</span> <span
-                class="money" id="bal-rosso">15 milioni</span></div>
-        <div id="card-verde" class="balance-card" style="border-color:var(--verde)"><span>VERDE</span> <span
-                class="money" id="bal-verde">15 milioni</span></div>
+    <!-- UI: CONSOLE NASCOSTA -->
+    <div id="debug-console">
+        <div style="font-size: 0.8rem; color: #aaa; text-align:center">COMANDO TESTUALE</div>
+        <input type="text" id="debug-input" placeholder="Scrivi qui...">
+        <button id="debug-btn" onclick="sendManualCommand()">ESEGUI</button>
     </div>
 
     <script>
@@ -510,6 +493,14 @@
                 effect: () => {
                     const { houses, hotels } = countPlayerBuildings(activeActor);
                     const total = houses * 500000 + hotels * 1000000;
+                    updateBalance(activeActor, -total);
+                }
+            },
+            {
+                text: "Carta imprevisti: Gli edifici costruiti sono troppo lontani da una fognatura, bisogna costruire un depuratore con lo scarico al suolo, per fortuna c'è lo sconto ambientale! Il prezzo è di 150000 per ogni casa e 300000 per ogni albergo.", weight: 1,
+                effect: () => {
+                    const { houses, hotels } = countPlayerBuildings(activeActor);
+                    const total = houses * 150000 + hotels * 300000;
                     updateBalance(activeActor, -total);
                 }
             },
