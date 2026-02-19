@@ -376,7 +376,7 @@
                 text: "Carta imprevisti: Fai 9 passi indietro", weight: 1,
             },
             {
-                text: "Carta imprevisti: Usa il comando: prendere il treno", weight: 1,
+                text: "VAI_A_PROPRIETA_CASUALE", weight: 1,
             },
             {
                 text: "Carta imprevisti: Ti piace giocare lentamente? Bene! Al tuo prossimo turno tira solo un dado!", weight: 1,
@@ -430,7 +430,7 @@
                 text: "Carta imprevisti: Mi hai insultato su Monopoly Voice Banking? Vai dritto in prigione e vergognati!", weight: 1,
             },
             {
-                text: "Carta imprevisti: Riendiamo il gioco più divertente! Nel tuo prossimo turno tira 3 dadi.", weight: 1,
+                text: "Carta imprevisti: Riendiamo il gioco più divertente! Nel tuo prossimo turno tira 3 dadi, il valore del dado extra non ti permette di avere un valore doppio, quindi di rilanciare i dadi.", weight: 1,
             },
             {
                 text: "Carta imprevisti: Buon compleanno! Ricevete 250000 da ogni giocatore.", weight: 1,
@@ -486,7 +486,7 @@
                 }
             },
             {
-                text: "Carta imprevisti: Ricevete una consulenza: incassi 500000.", weight: 1,
+                text: "Carta imprevisti: Ricevete una consulenza: incassa 500000.", weight: 1,
                 effect: () => {
                     updateBalance(activeActor, 500000);
                 }
@@ -508,7 +508,7 @@
                 }
             },
             {
-                text: "Carta imprevisti: Hai vinto un premio di bellezza: incassi 100000.", weight: 1,
+                text: "Carta imprevisti: Hai vinto un premio di bellezza: incassa 100000.", weight: 1,
                 effect: () => {
                     updateBalance(activeActor, 100000);
                 }
@@ -521,7 +521,7 @@
             },
             // --- NUOVE CARTE IMPREVISTI DIVERTENTI E BILANCIATE ---
             {
-                text: "Carta imprevisti: Hai vinto la lotteria nazionale! Incassi 3000000.", weight: 1,
+                text: "Carta imprevisti: Hai vinto la lotteria nazionale! Incassa 3000000.", weight: 1,
                 effect: () => {
                     updateBalance(activeActor, 3000000);
                 }
@@ -542,7 +542,7 @@
                 }
             },
             {
-                text: "Carta imprevisti: Il tuo computer è stato infettato da un virus, devi pagare il pizzo, anche chiamato antivirus costa 750000.", weight: 1,
+                text: "Carta imprevisti: Il tuo computer è stato infettato da un virus, devi pagare il pizzo, anche chiamato antivirus. Costa 750000.", weight: 1,
                 effect: () => {
                     updateBalance(activeActor, -750000);
                 }
@@ -604,7 +604,7 @@
             }
 
             const t = finalText.toLowerCase();
-            const isPositive = t.includes("incass") || t.includes("ritir") || t.includes("ricev") || t.includes("vinc") || t.includes("eredit");
+            const isPositive = t.includes("incass") || t.includes("ritir") || t.includes("ricev") || t.includes("vinc") || t.includes("donato") || t.includes("eredit");
 
             speak(finalText, isPositive ? "Ka-ching" : null, true);
             setTimeout(() => { if (card.effect) card.effect(); }, 100);
