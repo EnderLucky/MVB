@@ -930,7 +930,7 @@
             }
 
             // COMANDO: CEDI PROPRIETÀ (trasferimento gratuito ad altro giocatore)
-            if (msg.includes("cedi")) {
+            if (msg.includes("cedi") || msg.includes("c'è d") || msg.includes("teddy")) {
                 for (let p in gameState.properties) {
                     if (msg.includes(p)) {
                         let prop = gameState.properties[p];
@@ -995,7 +995,7 @@
 
                     // 8. Feedback vocale
 
-                    speak(`Giocatore ${player} è andato in bancarotta. Tutte le sue proprietà ora appartengono alla banca.`, "gameover", true);
+                    speak(`Il giocatore ${player} è andato in bancarotta. Tutte le sue proprietà ora appartengono alla banca.`, "gameover", true);
 
                     // 9. Controlla se rimane un solo giocatore (vincitore)
                     const remainingPlayers = selectedColors.filter(c => !gameState.bankruptPlayers.includes(c));
@@ -1089,7 +1089,7 @@
                 for (let p in gameState.properties) { if (msg.includes(p)) { propName = p; break; } }
 
                 if (propName) {
-                    speak(`Asta per ${propName}! I giocatori possono rilanciare a voce. Al termine, il vincitore deve dire: Ottieni ${propName}, seguito dalla cifra finale.`, "martelletto", false, 2000);
+                    speak(`Asta per ${propName}! I giocatori possono rilanciare a voce. Al termine, il vincitore deve dire: Ottieni ${propName} seguito dalla cifra finale.`, "martelletto", false, 2000);
                 } else {
                     speak("Quale proprietà vuoi mettere all'asta?");
                 }
