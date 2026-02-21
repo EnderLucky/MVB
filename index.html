@@ -957,7 +957,7 @@
             }
 
             // --- COMANDO: BANCAROTTA ---
-            if (msg.includes("bancarotta")) {
+            if (msg.includes("bancarotta") || msg.includes("banca rotta")) {
                 const player = activeActor;
 
                 // Piccolo ritardo per dare tempo di ascoltare
@@ -1098,7 +1098,7 @@
 
             // --- LOGICA COSTRUZIONE AVANZATA (CASE E ALBERGHI) ---
             const isBuilding = msg.includes("costrui") || msg.includes("metti") || msg.includes("compra") || msg.includes("fai");
-            const colorSets = ["marrone", "azzurro", "rosa", "arancio", "rosso", "giallo", "verde", "blu"];
+            const colorSets = ["marrone", "azzurro", "fucsia", "arancio", "rosso", "giallo", "verde", "blu"];
 
             // 1. GESTIONE COSTRUZIONE CASE
             if (isBuilding && (msg.includes("casa") || msg.includes("abitazione"))) {
@@ -1311,7 +1311,7 @@
                 return;
             }
 
-            if (msg.includes("incassa") || msg.includes("ricevi") || msg.includes("aggiungi")) {
+            if (msg.includes("incassa") || msg.includes("ricevi") || msg.includes("aggiungi") || msg.includes("in cassa")) {
                 let amt = parseMoney(msg);
                 if (amt > 0) {
                     updateBalance(activeActor, amt);
