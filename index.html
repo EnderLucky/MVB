@@ -321,9 +321,9 @@
                 "bastioni gran sasso": { set: "azzurro", price: 1000000, buildCost: 500000, rents: [60000, 300000, 900000, 2700000, 4000000, 5500000], owner: null, houses: 0, mortgaged: false },
                 "viale monte rosa": { set: "azzurro", price: 1000000, buildCost: 500000, rents: [60000, 300000, 900000, 2700000, 4000000, 5500000], owner: null, houses: 0, mortgaged: false },
                 "viale vesuvio": { set: "azzurro", price: 1200000, buildCost: 500000, rents: [80000, 400000, 1000000, 3000000, 4500000, 6000000], owner: null, houses: 0, mortgaged: false },
-                "via accademia": { set: "rosa", price: 1400000, buildCost: 1000000, rents: [100000, 500000, 1500000, 4500000, 6250000, 7500000], owner: null, houses: 0, mortgaged: false },
-                "corso ateneo": { set: "rosa", price: 1400000, buildCost: 1000000, rents: [100000, 500000, 1500000, 4500000, 6250000, 7500000], owner: null, houses: 0, mortgaged: false },
-                "piazza università": { set: "rosa", price: 1600000, buildCost: 1000000, rents: [120000, 600000, 1800000, 5000000, 7000000, 9000000], owner: null, houses: 0, mortgaged: false },
+                "via accademia": { set: "fucsia", price: 1400000, buildCost: 1000000, rents: [100000, 500000, 1500000, 4500000, 6250000, 7500000], owner: null, houses: 0, mortgaged: false },
+                "corso ateneo": { set: "fucsia", price: 1400000, buildCost: 1000000, rents: [100000, 500000, 1500000, 4500000, 6250000, 7500000], owner: null, houses: 0, mortgaged: false },
+                "piazza università": { set: "fucsia", price: 1600000, buildCost: 1000000, rents: [120000, 600000, 1800000, 5000000, 7000000, 9000000], owner: null, houses: 0, mortgaged: false },
                 "via verdi": { set: "arancio", price: 1800000, buildCost: 1000000, rents: [140000, 700000, 2000000, 5500000, 7500000, 9500000], owner: null, houses: 0, mortgaged: false },
                 "corso raffaello": { set: "arancio", price: 1800000, buildCost: 1000000, rents: [140000, 700000, 2000000, 5500000, 7500000, 9500000], owner: null, houses: 0, mortgaged: false },
                 "piazza dante": { set: "arancio", price: 2000000, buildCost: 1000000, rents: [160000, 800000, 2200000, 6000000, 8000000, 10000000], owner: null, houses: 0, mortgaged: false },
@@ -1252,7 +1252,7 @@
             }
 
             // COMANDO: IPOTECA (Prendi metà valore della proprietà)
-            if (msg.includes("ipoteca") && !msg.includes("togli") && !msg.includes("rimuovi") && !msg.includes("ripaga") && !msg.includes("cancella")) {
+            if (msg.includes("paninoteca") || msg.includes("ipoteca") && !msg.includes("togli") && !msg.includes("rimuovi") && !msg.includes("ripaga") && !msg.includes("cancella")) {
                 for (let p in gameState.properties) {
                     if (msg.includes(p)) {
                         let prop = gameState.properties[p];
