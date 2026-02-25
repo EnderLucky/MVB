@@ -350,7 +350,7 @@
         // --- DATABASE CARTE IMPREVISTI (senza tracciamento carte speciali) ---
         const imprevisti = [
             {
-                text: "Carta imprevisti: Andate fino al Via ed incassate 2000000!", weight: 1,
+                text: "Carta imprevisti: Vai fino al Via, ho già aggiunto 2000000 al tuo conto!", weight: 1,
                 effect: () => {
                     updateBalance(activeActor, 2000000);
                 }
@@ -604,7 +604,7 @@
             }
 
             const t = finalText.toLowerCase();
-            const isPositive = t.includes("incass") || t.includes("ritir") || t.includes("ricev") || t.includes("vinc") || t.includes("donato") || t.includes("eredit");
+            const isPositive = t.includes("incass") || t.includes("ritir") || t.includes("ricev") || t.includes("vinc") || t.includes("donato") || t.includes("eredit") || t.includes("aggiunto al");
 
             speak(finalText, isPositive ? "Ka-ching" : null, true);
             setTimeout(() => { if (card.effect) card.effect(); }, 100);
@@ -818,6 +818,28 @@
         // --- LA LOGICA CENTRALE: COSA FARE QUANDO L'UTENTE PARLA ---
         function processCommand(msg) {
 
+
+            // COMANDO: CHECK AUDIO
+            if (msg.includes("mi senti")) {
+
+                speak("Forte e chiaro!");
+                return;
+            }
+
+            // COMANDO: SALUTO
+            if (msg.includes("ciao") || msg.includes("salve") || msg.includes("buongiorno") || msg.includes("buonasera") || msg.includes("ave") || msg.includes("ehi") || msg.includes("hey")) {
+
+                speak("Ciao!");
+                return;
+            }
+
+            // COMANDO: NUOVE REGOLE
+            if (msg.includes("regol") || msg.includes("nuov")) {
+
+                speak("Ecco le nuove regole! Quando un giocatore finisce su una stazione, nello stesso turno può prendere il treno dicendo: prendere il treno, per andare su una proprietà casuale!      Inoltre, le carte probabilità ed imprevisti coincidono e sono gestite da me, basta dire: carta imprevisti, mettete nel tabellone solo quelle di uscita gratis di prigione e prendetele solo quando ve lo dico io!");
+                return;
+            }
+
             // COMANDO: PASSA DAL VIA
             if (msg.includes("pass") && msg.includes("via")) {
                 updateBalance(activeActor, 2000000);
@@ -848,7 +870,7 @@
                 const oldBalance = gameState.players[activeActor].balance;
                 gameState.players[activeActor].balance = amount;
                 document.getElementById(`bal-${activeActor}`).textContent = formatMoney(amount);
-                speak(`Ho impostato ${formatMoneyForSpeech(amount)} a ${activeActor} banconote del monopoly.`);
+                speak(`Ho impostato ${formatMoneyForSpeech(amount)} a ${activeActor}.`);
                 return;
             }
 
@@ -873,7 +895,7 @@
                         if (gameState.players[activeActor].balance >= prop.price) {
                             updateBalance(activeActor, -prop.price);
                             prop.owner = activeActor;
-                            speak(`${p}, è tua per ${formatMoneyForSpeech(prop.price)} banconote del monopoly!`, "Ka-ching", false, 2000);
+                            speak(`${p}, è tua per ${formatMoneyForSpeech(prop.price)}!`, "Ka-ching", false, 2000);
                         } else { speak("Non hai abbastanza denaro."); }
                         return;
                     }
@@ -896,7 +918,7 @@
                             if (gameState.players[activeActor].balance >= cost) {
                                 updateBalance(activeActor, -cost);
                                 prop.owner = activeActor;
-                                speak(`${p} è tua per ${formatMoneyForSpeech(cost)} banconote del monopoly!`);
+                                speak(`${p} è tua per ${formatMoneyForSpeech(cost)}!`);
                             } else {
                                 speak("Non hai abbastanza denaro per questa cifra.");
                             }
@@ -1044,7 +1066,7 @@
 
                         updateBalance(activeActor, -amount);
                         updateBalance(prop.owner, amount);
-                        speak(`Hai pagato al giocatore ${prop.owner}, ${formatMoneyForSpeech(amount)} banconote del monopoly.`, "Ka-ching", false, 2000);
+                        speak(`Hai pagato al giocatore ${prop.owner}, ${formatMoneyForSpeech(amount)}.`, "Ka-ching", false, 2000);
                         return;
                     }
                 }
@@ -1079,7 +1101,7 @@
                     // Esecuzione transazione
                     updateBalance(activeActor, -amount);
                     updateBalance(recipient, amount);
-                    speak(`Hai pagato ${formatMoneyForSpeech(amount)} banconote del monopoly a ${recipient}.`);
+                    speak(`Hai pagato ${formatMoneyForSpeech(amount)} a ${recipient}.`);
                     return; // Esci dopo aver gestito il comando
                 }
             }
@@ -1098,7 +1120,7 @@
 
             // --- LOGICA COSTRUZIONE AVANZATA (CASE E ALBERGHI) ---
             const isBuilding = msg.includes("costrui") || msg.includes("metti") || msg.includes("compra") || msg.includes("fai");
-            const colorSets = ["marrone", "azzurro", "fucsia", "arancio", "rosso", "giallo", "verde", "blu"];
+            const colorSets = ["marrone", "azzurro", "rosa", "arancio", "rosso", "giallo", "verde", "blu"];
 
             // 1. GESTIONE COSTRUZIONE CASE
             if (isBuilding && (msg.includes("casa") || msg.includes("abitazione"))) {
@@ -1129,7 +1151,7 @@
 
                     if (builtOn.length > 0) {
                         updateBalance(activeActor, -totalCost);
-                        speak(`Metti una casa su ${builtOn.join(", ")}. Costo totale: ${formatMoneyForSpeech(totalCost)} banconote del monopoly.`, "build", false, 3000);
+                        speak(`Metti una casa su ${builtOn.join(", ")}. Costo totale: ${formatMoneyForSpeech(totalCost)}.`, "build", false, 3000);
                     } else {
                         speak(`Tutte le proprietà ${targetSet} hanno già 4 case o non hai abbastanza denaro.`);
                     }
@@ -1158,11 +1180,15 @@
                             prop.houses++;
                             speak(`Metti una casa su ${p}.`, "build", false, 3000);
                         } else {
-                            speak(`Ti servono ${formatMoneyForSpeech(prop.buildCost)} per una mettere casa qui.`);
+                            speak(`Ti servono ${formatMoneyForSpeech(prop.buildCost)} per mettere una casa qui.`);
                         }
                         return;
                     }
                 }
+
+                // --- MODIFICA AGGIUNTA: Nessuna proprietà/serie specificata per la casa ---
+                speak("Specifica una proprietà su cui costruire la casa, puoi anche scegliere un colore per costruire su tutte le proprietà di quella serie.");
+                return;
             }
 
             // 2. GESTIONE COSTRUZIONE ALBERGHI (Con acquisto automatico case mancanti)
@@ -1197,7 +1223,7 @@
 
                     if (builtOn.length > 0) {
                         updateBalance(activeActor, -totalCost);
-                        speak(`Metti gli hotel su: ${builtOn.join(", ")}. Ho incluso il costo delle case mancanti per arrivare all'hotel. Totale: ${formatMoneyForSpeech(totalCost)} banconote.`, "build", false, 3000);
+                        speak(`Metti gli hotel su: ${builtOn.join(", ")}. Ho incluso il costo delle case mancanti per arrivare all'hotel. Totale: ${formatMoneyForSpeech(totalCost)}.`, "build", false, 3000);
                     } else {
                         speak(`Non hai abbastanza denaro o hai già tutti gli hotel sulla serie ${targetSet}.`);
                     }
@@ -1219,13 +1245,17 @@
                             updateBalance(activeActor, -totalCost);
                             prop.houses = 5;
                             let text = housesToBuy > 1 ? `Ho aggiunto le case mancanti e l'hotel su ${p}.` : `Hotel costruito su ${p}.`;
-                            speak(`${text} Spesa totale: ${formatMoneyForSpeech(totalCost)}.`, "build", false, 3000);
+                            speak(`${text} Hai pagato un totale di ${formatMoneyForSpeech(totalCost)}.`, "build", false, 3000);
                         } else {
-                            speak(`Ti mancano i fondi: l'operazione costa ${formatMoneyForSpeech(totalCost)}.`);
+                            speak(`Non hai abbastanza denaro: l'operazione costa ${formatMoneyForSpeech(totalCost)}.`);
                         }
                         return;
                     }
                 }
+
+                // --- MODIFICA AGGIUNTA: Nessuna proprietà/serie specificata per l'albergo ---
+                speak("Specifica una proprietà su cui costruire l'albergo, puoi anche scegliere un colore per costruire su tutte le proprietà di quella serie.");
+                return;
             }
             // COMANDO: DEMOLIZIONE (Vendere edifici per metà prezzo)
             const isDemolishing = msg.includes("vendi") || msg.includes("togli") || msg.includes("demolisci") || msg.includes("rimuovi");
@@ -1273,24 +1303,34 @@
                         prop.mortgaged = true;
                         let val = prop.price / 2;
                         updateBalance(activeActor, val);
-                        speak(`${p} ipotecata. Ricevi ${formatMoneyForSpeech(val)} banconote del monopoly.`);
+                        speak(`${p} ipotecata. Ricevi ${formatMoneyForSpeech(val)}.`);
                         return;
                     }
                 }
             }
 
             // COMANDO: TOGLI IPOTECA (Paghi metà valore + 10%)
-            if (msg.includes("togli") || msg.includes("cancella") || msg.includes("rimuovi") || msg.includes("ripaga") && msg.includes("ipoteca")) {
+            if ((msg.includes("togli") || msg.includes("cancella") || msg.includes("rimuovi") || msg.includes("ripaga")) && msg.includes("ipoteca")) {
                 for (let p in gameState.properties) {
                     if (msg.includes(p)) {
                         let prop = gameState.properties[p];
                         if (!prop.mortgaged) return speak("Non è ipotecata.");
+
+                        // Calcola il 55% del prezzo originale
                         let val = Math.round(prop.price * 0.55);
+
+                        // Se non è divisibile per 10.000, aggiungi 5.000
+                        if (val % 10000 !== 0) {
+                            val += 5000;
+                        }
+
                         if (gameState.players[activeActor].balance >= val) {
                             updateBalance(activeActor, -val);
                             prop.mortgaged = false;
-                            speak(`Ipoteca tolta da ${p} pagando ${formatMoneyForSpeech(val)} banconote del monopoly.`);
-                        } else { speak("Non hai abbastanza denaro."); }
+                            speak(`Ipoteca tolta da ${p} pagando ${formatMoneyForSpeech(val)}.`);
+                        } else {
+                            speak("Non hai abbastanza denaro.");
+                        }
                         return;
                     }
                 }
@@ -1315,7 +1355,7 @@
                 let amt = parseMoney(msg);
                 if (amt > 0) {
                     updateBalance(activeActor, amt);
-                    speak(`Ricevuti ${formatMoneyForSpeech(amt)} banconote del monopoly.`, "Ka-ching", true, 100);
+                    speak(`Ricevuti ${formatMoneyForSpeech(amt)}.`, "Ka-ching", true, 100);
                 }
                 return;
             }
@@ -1348,15 +1388,23 @@
 
         // TRASFORMA I NUMERI IN TESTO PER LA SINTESI VOCALE (solo numeri interi)
         function formatMoneyForSpeech(n) {
-            return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            // Formatta il numero con i punti (es. 2.000.000)
+            let numero = n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+            // Se la cifra è divisibile per un milione (es. 1.000.000, 2.000.000 ecc.)
+            if (n >= 1000000 && n % 1000000 === 0) {
+                return numero + " di banconote del monopoly";
+            } else {
+                return numero + " banconote del monopoly";
+            }
         }
 
-        // TRASFORMA LE PAROLE CAPITE DAL MICROFONO IN NUMERI (Supporta somme composte come 1 milione e 500 mila)
+        // TRASFORMA LE PAROLE CAPITE DAL MICROFONO IN NUMERI
         function parseMoney(text) {
-            // 1. Pulizia: rimuove i punti che il microfono mette a volte come separatori delle migliaia
+            // 1. Pulizia: rimuove i punti
             text = text.replace(/\./g, "").toLowerCase();
 
-            // 2. Database delle somme scritte in lettere (da 50k a 950k)
+            // 2. Database delle somme composte
             const paroleComposte = {
                 "cinquantamila": 50000, "centomila": 100000, "centocinquantamila": 150000,
                 "duecentomila": 200000, "duecentocinquantamila": 250000, "trecentomila": 300000,
@@ -1373,25 +1421,27 @@
                 // Cerca prima nei numeri scritti (es: "500000")
                 let matchDigit = subtext.match(/\d+/);
                 if (matchDigit) return parseInt(matchDigit[0]);
+
                 // Poi nelle parole semplici (es: "cinque")
                 for (let parola in paroleSemplici) {
-                    if (subtext.includes(parola)) return paroleSemplici[parola];
+                    // IL FIX: \b assicura che cerchi la parola ESATTA e non "tre" dentro "stretto"
+                    let regex = new RegExp("\\b" + parola + "\\b");
+                    if (regex.test(subtext)) return paroleSemplici[parola];
                 }
                 return 0;
             }
 
             let totale = 0;
 
-            // 3. Controllo parole composte (es: "cinquecentomila")
+            // 3. Controllo parole composte
             for (let parola in paroleComposte) {
                 if (text.includes(parola)) {
                     totale += paroleComposte[parola];
-                    // Rimuove la parola per evitare che venga contata di nuovo nel ciclo successivo
                     text = text.replace(parola, "");
                 }
             }
 
-            // 4. Gestione MILIONI + migliaia rimanenti (es: "un milione e 500 mila")
+            // 4. Gestione MILIONI
             if (text.includes("milion")) {
                 let partiMilioni = text.split(/milion[ei]/);
                 totale += extractValue(partiMilioni[0]) * 1000000;
@@ -1400,15 +1450,14 @@
                     totale += extractValue(partiMilioni[1]) * 1000;
                 }
             }
-            // 5. Gestione MIGLIAIA semplici (es: "500 mila")
+            // 5. Gestione MIGLIAIA
             else if (text.includes("mila")) {
                 totale += extractValue(text) * 1000;
             }
-            // 6. Cifra secca senza parole chiave (es: "paga 200")
+            // 6. Cifra secca
             else {
                 let val = extractValue(text);
                 if (val > 0) {
-                    // Se dici un numero piccolo (es: 100), il banchiere assume "mila"
                     totale += (val < 1000) ? val * 1000 : val;
                 }
             }
