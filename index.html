@@ -834,7 +834,7 @@
             }
 
             // COMANDO: NUOVE REGOLE
-            if (msg.includes("regol") || msg.includes("nuov")) {
+            if (msg.includes("regol") && msg.includes("nuov")) {
 
                 speak("Ecco le nuove regole! Quando un giocatore finisce su una stazione, nello stesso turno può prendere il treno dicendo: prendere il treno, per andare su una proprietà casuale!      Inoltre, le carte probabilità ed imprevisti coincidono e sono gestite da me, basta dire: carta imprevisti, mettete nel tabellone solo quelle di uscita gratis di prigione e prendetele solo quando ve lo dico io!");
                 return;
