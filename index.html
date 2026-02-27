@@ -370,6 +370,9 @@
                 }
             },
             {
+                text: "Carta imprevisti: Sei contento dei tuoi acquisti? Se vuoi, ripeto, SOLO SE VUOI. Puoi ipotecare una proprietà e restituirla alla banca ottenendo il doppio del suo prezzo di acquisto! Basta usare il comando PERDI, seguìto dal nome della proprietà. Ed il comando incassa, seguìto dalla cifra pari al doppio del prezzo di acquisto", weight: 1,
+            },
+            {
                 text: "Carta imprevisti: Fai 3 passi indietro", weight: 1,
             },
             {
@@ -421,7 +424,7 @@
                 text: "Carta imprevisti: Sei diventato molto popolare, il sindaco ti ha dato una carta esci gratis di prigione! Tiènila per il futuro o scàmbiala con qualcuno!", weight: 1,
             },
             {
-                text: "Carta imprevisti: Mi piace il tuo stile! prendi una carta esci gratis di prigione! Tiènila per il futuro o scàmbiala con qualcuno!", weight: 1,
+                text: "Carta imprevisti: Mi piace il tuo stile! Eccoti un pensiero! prendi una carta esci gratis di prigione! Tiènila per il futuro o scàmbiala con qualcuno!", weight: 1,
             },
             {
                 text: "Carta imprevisti: Hai usato un'app per usare il Monopoly senza licenza di Hasbro? Vai dritto in prigione senza passare dal Via!", weight: 1,
@@ -431,6 +434,9 @@
             },
             {
                 text: "Carta imprevisti: Riendiamo il gioco più divertente! Nel tuo prossimo turno tira 3 dadi, il valore del dado extra non ti permette di avere un valore doppio, quindi di rilanciare i dadi.", weight: 1,
+            },
+            {
+                text: "Carta imprevisti: Vai fino alla Smart vuoter, anche chiamata Società acqua potabile, senza passare dal via, se la proprietà appartiene a qualcun altro, tira i dadi per calcolare l'affitto. Ma se esce un numero doppio sarà il proprietario a pagare TE.", weight: 1,
             },
             {
                 text: "Carta imprevisti: Buon compleanno! Ricevete 250000 da ogni giocatore.", weight: 1,
@@ -451,6 +457,12 @@
                 text: "Carta imprevisti: È arrivato il rimborso delle tasse: incassa 500000.", weight: 1,
                 effect: () => {
                     updateBalance(activeActor, 500000);
+                }
+            },
+            {
+                text: "Carta imprevisti: Hai pagato 200000 per ottenere per vie traverse una carta di uscita gratis di prigione. Prendine una se ce ne sono di disponibili, altrimenti vai in carcere", weight: 1,
+                effect: () => {
+                    updateBalance(activeActor, -200000);
                 }
             },
             {
@@ -591,7 +603,7 @@
             }
 
             const card = imprevisti[cardIndex];
-            card.weight = 0.25;
+            card.weight = 0.2;
 
             let finalText = card.text;
             if (card.text === "VAI_A_PROPRIETA_CASUALE") {
@@ -813,7 +825,7 @@
             return eligibleProps[randomIndex][0]; // Restituisce solo il nome
         }
 
-        // FUNZIONE PESCA AGGIORNATA: SISTEMA AD ESAURIMENTO (0.25 persitente)
+        // FUNZIONE PESCA AGGIORNATA: SISTEMA AD ESAURIMENTO (0.2 persitente)
 
         // --- LA LOGICA CENTRALE: COSA FARE QUANDO L'UTENTE PARLA ---
         function processCommand(msg) {
@@ -840,8 +852,15 @@
                 return;
             }
 
+            // COMANDO: ANNULLA
+            if (msg.includes("annulla")) {
+
+                speak("Ok, farò finta di non aver sentito!");
+                return;
+            }
+
             // COMANDO: PASSA DAL VIA
-            if (msg.includes("pass") && msg.includes("via")) {
+            if (msg.includes("pass") && msg.includes("via") && !msg.includes("annulla")) {
                 updateBalance(activeActor, 2000000);
                 speak(`Ecco a te 2000000!`, "Ka-ching", true, 500);
                 return;
@@ -855,13 +874,13 @@
             }
 
             // COMANDO: PESCA IMPREVISTO
-            if (msg.includes("imprevist") || msg.includes("probabilità")) {
+            if (msg.includes("imprevist") || msg.includes("probabilità") && !msg.includes("annulla")) {
                 drawImprevisto();
                 return;
             }
 
             // COMANDO: IMPOSTA I SOLDI
-            if (msg.includes("imposta") && msg.includes("soldi") || msg.includes("denaro")) {
+            if (msg.includes("imposta") && msg.includes("soldi") || msg.includes("denaro") && !msg.includes("annulla")) {
                 const amount = parseMoney(msg);
                 if (amount <= 0) {
                     speak("Importo non valido. Specifica un valore positivo.");
@@ -875,7 +894,7 @@
             }
 
             // COMANDO: ESCI DALLA PRIGIONE
-            if ((msg.includes("esci") && msg.includes("prigione")) || msg.includes("prigione")) {
+            if ((msg.includes("esci") && msg.includes("prigione")) && !msg.includes("annulla")) {
                 const jailFee = 500000;
                 if (gameState.players[activeActor].balance < jailFee) {
                     speak(`Denaro insufficiente per pagare ${formatMoneyForSpeech(jailFee)}.`);
@@ -887,7 +906,7 @@
             }
 
             // COMANDO: ACQUISTA UNA PROPRIETÀ
-            if (msg.includes("acquista") || msg.includes("compra")) {
+            if (msg.includes("acquista") || msg.includes("compra") && !msg.includes("annulla")) {
                 for (let p in gameState.properties) {
                     if (msg.includes(p)) {
                         let prop = gameState.properties[p];
@@ -905,7 +924,7 @@
             // --- NUOVI COMANDI: GESTIONE PROPRIETÀ SENZA TRANSAZIONI ---
 
             // COMANDO: OTTIENI PROPRIETÀ (con eventuale pagamento)
-            if (msg.includes("ottieni")) {
+            if (msg.includes("ottieni") && !msg.includes("annulla")) {
                 for (let p in gameState.properties) {
                     if (msg.includes(p)) {
                         let prop = gameState.properties[p];
@@ -934,7 +953,7 @@
                 return;
             }
             // COMANDO: PERDI PROPRIETÀ (senza nulla in cambio)
-            if (msg.includes("perdi")) {
+            if (msg.includes("perdi") && !msg.includes("annulla")) {
                 for (let p in gameState.properties) {
                     if (msg.includes(p)) {
                         let prop = gameState.properties[p];
@@ -952,7 +971,7 @@
             }
 
             // COMANDO: CEDI PROPRIETÀ (trasferimento gratuito ad altro giocatore)
-            if (msg.includes("cedi") || msg.includes("c'è d") || msg.includes("teddy")) {
+            if (msg.includes("cedi") || msg.includes("c'è d") || msg.includes("teddy") && !msg.includes("annulla")) {
                 for (let p in gameState.properties) {
                     if (msg.includes(p)) {
                         let prop = gameState.properties[p];
@@ -979,7 +998,7 @@
             }
 
             // --- COMANDO: BANCAROTTA ---
-            if (msg.includes("bancarotta") || msg.includes("banca rotta")) {
+            if (msg.includes("bancarotta") || msg.includes("banca rotta") && !msg.includes("annulla")) {
                 const player = activeActor;
 
                 // Piccolo ritardo per dare tempo di ascoltare
@@ -1075,7 +1094,7 @@
             // PAGA UN ALTRO GIOCATORE
             // Trigger words: paga, versa, dai + nome colore (escluso se stesso) + importo
             // Evita conflitti con "affitto" e comandi esistenti
-            if ((msg.includes("paga") || msg.includes("versa") || msg.includes("dai")) && !msg.includes("affitto")) {
+            if ((msg.includes("paga") || msg.includes("versa") || msg.includes("dai")) && !msg.includes("affitto") && !msg.includes("annulla")) {
                 // Trova possibili destinatari (giocatori attivi diversi da chi parla)
                 const possibleRecipients = selectedColors.filter(color =>
                     color !== activeActor && !gameState.bankruptPlayers.includes(color) && msg.includes(color)
@@ -1106,7 +1125,7 @@
                 }
             }
 
-            if (msg.includes("asta")) {
+            if (msg.includes("asta") && !msg.includes("annulla")) {
                 let propName = null;
                 for (let p in gameState.properties) { if (msg.includes(p)) { propName = p; break; } }
 
@@ -1119,7 +1138,7 @@
             }
 
             // --- LOGICA COSTRUZIONE AVANZATA (CASE E ALBERGHI) ---
-            const isBuilding = msg.includes("costrui") || msg.includes("metti") || msg.includes("compra") || msg.includes("fai");
+            const isBuilding = msg.includes("costrui") || msg.includes("mett") || msg.includes("compr") || msg.includes("fai") && !msg.includes("annulla");
             const colorSets = ["marrone", "azzurro", "rosa", "arancio", "rosso", "giallo", "verde", "blu"];
 
             // 1. GESTIONE COSTRUZIONE CASE
@@ -1258,7 +1277,7 @@
                 return;
             }
             // COMANDO: DEMOLIZIONE (Vendere edifici per metà prezzo)
-            const isDemolishing = msg.includes("vendi") || msg.includes("togli") || msg.includes("demolisci") || msg.includes("rimuovi");
+            const isDemolishing = msg.includes("vendi") || msg.includes("togli") || msg.includes("demolisci") || msg.includes("rimuovi") && !msg.includes("annulla");
             if (isDemolishing && (msg.includes("casa") || msg.includes("albergo") || msg.includes("hotel"))) {
                 for (let p in gameState.properties) {
                     if (msg.includes(p)) {
@@ -1282,7 +1301,7 @@
             }
 
             // COMANDO: IPOTECA (Prendi metà valore della proprietà)
-            if (msg.includes("paninoteca") || msg.includes("ipoteca") && !msg.includes("togli") && !msg.includes("rimuovi") && !msg.includes("ripaga") && !msg.includes("cancella")) {
+            if (msg.includes("paninoteca") || msg.includes("ipoteca") && !msg.includes("togli") && !msg.includes("rimuovi") && !msg.includes("ripaga") && !msg.includes("cancella") && !msg.includes("annulla")) {
                 for (let p in gameState.properties) {
                     if (msg.includes(p)) {
                         let prop = gameState.properties[p];
@@ -1310,7 +1329,7 @@
             }
 
             // COMANDO: TOGLI IPOTECA (Paghi metà valore + 10%)
-            if ((msg.includes("togli") || msg.includes("cancella") || msg.includes("rimuovi") || msg.includes("ripaga")) && msg.includes("ipoteca")) {
+            if ((msg.includes("togli") || msg.includes("cancella") || msg.includes("rimuovi") || msg.includes("ripaga")) && msg.includes("ipoteca") && !msg.includes("annulla")) {
                 for (let p in gameState.properties) {
                     if (msg.includes(p)) {
                         let prop = gameState.properties[p];
@@ -1338,20 +1357,16 @@
 
 
             // COMANDI GENERICI: PAGA O INCASSA DALLA BANCA
-            if (msg.includes("paga") || msg.includes("versa") || msg.includes("togli")) {
+            if (msg.includes("paga") || msg.includes("versa") || msg.includes("togli") && !msg.includes("annulla")) {
                 let amt = parseMoney(msg);
                 if (amt > 0) {
-                    if (gameState.players[activeActor].balance < amt) {
-                        speak("Non hai abbastanza denaro.");
-                        return;
-                    }
                     updateBalance(activeActor, -amt);
                     speak(`Pagati ${formatMoneyForSpeech(amt)}.`);
                 }
                 return;
             }
 
-            if (msg.includes("incassa") || msg.includes("ricevi") || msg.includes("aggiungi") || msg.includes("in cassa")) {
+            if (msg.includes("incassa") || msg.includes("ricevi") || msg.includes("aggiungi") || msg.includes("in cassa") && !msg.includes("annulla")) {
                 let amt = parseMoney(msg);
                 if (amt > 0) {
                     updateBalance(activeActor, amt);
