@@ -370,7 +370,7 @@
                 }
             },
             {
-                text: "Carta imprevisti: Sei contento dei tuoi acquisti? Se vuoi, ripeto, SOLO SE VUOI. Puoi ipotecare una proprietà e restituirla alla banca ottenendo il doppio del suo prezzo di acquisto! Basta usare il comando PERDI, seguìto dal nome della proprietà. Ed il comando incassa, seguìto dalla cifra pari al doppio del prezzo di acquisto", weight: 1,
+                text: "Carta imprevisti: Sei contento dei tuoi acquisti? Se vuoi, ripeto, SOLO SE VUOI. Puoi ipotecare una proprietà e restituirla alla banca ottenendo il doppio del suo prezzo di acquisto! Basta usare il comando RESTITUISCI, seguìto dal nome della proprietà.", weight: 1,
             },
             {
                 text: "Carta imprevisti: Fai 3 passi indietro", weight: 1,
@@ -1355,6 +1355,52 @@
                 }
             }
 
+            // COMANDO: RESTITUISCI PROPRIETÀ
+            if (msg.includes("restitui") && !msg.includes("annulla")) {
+                let propertyFound = false;
+                for (let p in gameState.properties) {
+                    if (msg.includes(p)) {
+                        propertyFound = true;
+                        let prop = gameState.properties[p];
+
+                        // Controllo se appartiene a qualcun altro (o a nessuno)
+                        if (prop.owner !== activeActor) {
+                            let possessore = prop.owner ? `al giocatore ${prop.owner}` : "alla banca";
+                            return speak(`Non puoi restituire ${p}, perché appartiene ${possessore}.`);
+                        }
+
+                        // Calcolo del rimborso base (doppio del prezzo di acquisto)
+                        let refund = prop.price * 2;
+                        let wasMortgaged = prop.mortgaged;
+
+                        // Se NON è ipotecata, aggiungo anche i soldi dell'ipoteca (metà del prezzo base)
+                        if (!wasMortgaged) {
+                            refund += (prop.price / 2);
+                        }
+
+                        // Resetto lo stato della proprietà per la banca
+                        prop.owner = null;
+                        prop.houses = 0;
+                        prop.mortgaged = false;
+
+                        updateBalance(activeActor, refund);
+
+                        // Feedback vocale differente in base allo stato dell'ipoteca
+                        if (!wasMortgaged) {
+                            speak(`Hai restituito ${p} non ipotecata. Ricevi il doppio del prezzo più il valore dell'ipoteca, ottieni ${formatMoneyForSpeech(refund)}.`, "Ka-ching", false, 1000);
+                        } else {
+                            speak(`Hai restituito ${p} alla banca. Ricevi il doppio del prezzo, ovvero ${formatMoneyForSpeech(refund)}.`, "Ka-ching", false, 1000);
+                        }
+                        return;
+                    }
+                }
+
+                // Se il ciclo finisce e non ha trovato nessuna proprietà nella frase
+                if (!propertyFound) {
+                    speak("Quale proprietà vuoi restituire? Questo comando si può usare solo se concesso da una carta imprevisti.");
+                    return;
+                }
+            }
 
             // COMANDI GENERICI: PAGA O INCASSA DALLA BANCA
             if (msg.includes("paga") || msg.includes("versa") || msg.includes("togli") && !msg.includes("annulla")) {
@@ -1366,7 +1412,7 @@
                 return;
             }
 
-            if (msg.includes("incassa") || msg.includes("ricevi") || msg.includes("aggiungi") || msg.includes("in cassa") && !msg.includes("annulla")) {
+            if (msg.includes("incass") || msg.includes("ricevi") || msg.includes("aggiungi") || msg.includes("in cassa") && !msg.includes("annulla")) {
                 let amt = parseMoney(msg);
                 if (amt > 0) {
                     updateBalance(activeActor, amt);
