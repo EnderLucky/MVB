@@ -385,9 +385,9 @@
                 text: "Carta imprevisti: Ti piace giocare lentamente? Bene! Al tuo prossimo turno tira solo un dado!", weight: 1,
             },
             {
-                text: "Carta imprevisti: Sei stato querelato per aver riso alle battute su Totti! Mo devi annà ar tribunale, devi pagà 'na murta de 150000 sordi e hai da finì ar gabbio!", weight: 1,
+                text: "Carta imprevisti: Sei stato querelato per aver riso alle battute su Totti! Mo devi annà ar tribunale, devi pagà 'na murta de 350000 sordi e hai da finì ar gabbio!", weight: 1,
                 effect: () => {
-                    updateBalance(activeActor, -150000);
+                    updateBalance(activeActor, -350000);
                 }
             },
             {
@@ -485,15 +485,15 @@
                 }
             },
             {
-                text: "Carta imprevisti: Dovresti farti doppiare da un altro giocatore, pago ogni giocatore 250000", weight: 1,
+                text: "Carta imprevisti: Dovresti farti doppiare da un altro giocatore, pago ogni giocatore 350000", weight: 1,
                 effect: () => {
                     const recipients = selectedColors.filter(c =>
                         c !== activeActor && !gameState.bankruptPlayers.includes(c)
                     );
-                    const totalRequired = recipients.length * 250000;
+                    const totalRequired = recipients.length * 350000;
                     for (const recipient of recipients) {
-                        updateBalance(activeActor, -250000);
-                        updateBalance(recipient, 250000);
+                        updateBalance(activeActor, -350000);
+                        updateBalance(recipient, 350000);
                     }
                 }
             },
@@ -531,7 +531,6 @@
                     updateBalance(activeActor, 1000000);
                 }
             },
-            // --- NUOVE CARTE IMPREVISTI DIVERTENTI E BILANCIATE ---
             {
                 text: "Carta imprevisti: Hai vinto la lotteria nazionale! Incassa 3000000.", weight: 1,
                 effect: () => {
@@ -543,6 +542,18 @@
             },
             {
                 text: "Carta imprevisti: Hai già dato da mangiare al gatto? Bene! Ritira i dadi.", weight: 1,
+            },
+            {
+                text: "Carta imprevisti: Lancia un dado, se il risultato è 6, devi dire tre volte carta imprevisti.", weight: 1,
+            },
+            {
+                text: "Carta imprevisti: Vai alla proprietà colorata disponibile più vicina. Se la vuoi comprare devi pagare il doppio del prezzo di mercato, altrimenti puoi sempre fare un'asta. Se non ci sono più proprietà disponibili non fare nulla", weight: 1,
+            },
+            {
+                text: "Carta imprevisti: Sai qual è il colmo per una carta imprevisti? Non fare nulla!. . . Badum tiss", weight: 1,
+            },
+            {
+                text: "Carta imprevisti: Errata corrige, restituisci la carta esci gratis di prigione, se ne hai una...", weight: 1,
             },
             {
                 text: "Carta imprevisti: Un giocatore ti querela per calunnia, scegli un giocatore a cui dare 500000 usando il comando: paga.", weight: 1,
@@ -560,14 +571,14 @@
                 }
             },
             {
-                text: "Carta imprevisti: Sei stato eletto sindaco per un giorno! Ogni giocatore ti paga 100000.", weight: 1,
+                text: "Carta imprevisti: Sei stato eletto sindaco per un giorno! Ogni giocatore ti paga 200000.", weight: 1,
                 effect: () => {
                     const otherPlayers = selectedColors.filter(c =>
                         c !== activeActor && !gameState.bankruptPlayers.includes(c)
                     );
                     let totalReceived = 0;
                     for (const player of otherPlayers) {
-                        const amount = Math.min(100000, gameState.players[player].balance);
+                        const amount = Math.min(200000, gameState.players[player].balance);
                         updateBalance(player, -amount);
                         totalReceived += amount;
                     }
@@ -859,6 +870,14 @@
                 return;
             }
 
+            // COMANDO: COSE BRUTTE
+
+            if (msg.includes("boppi") || msg.includes("boppy")) {
+
+                speak("Vergogna! è già tanto che non finisci in gattabuia!");
+                return;
+            }
+
             // COMANDO: PASSA DAL VIA
             if (msg.includes("pass") && msg.includes("via") && !msg.includes("annulla")) {
                 updateBalance(activeActor, 2000000);
@@ -882,7 +901,7 @@
             // COMANDO: IMPOSTA I SOLDI
             if (msg.includes("imposta") && msg.includes("soldi") || msg.includes("denaro") && !msg.includes("annulla")) {
                 const amount = parseMoney(msg);
-                if (amount <= 0) {
+                if (amount < 0) {
                     speak("Importo non valido. Specifica un valore positivo.");
                     return;
                 }
@@ -897,7 +916,7 @@
             if ((msg.includes("esci") && msg.includes("prigione")) && !msg.includes("annulla")) {
                 const jailFee = 500000;
                 if (gameState.players[activeActor].balance < jailFee) {
-                    speak(`Denaro insufficiente per pagare ${formatMoneyForSpeech(jailFee)}.`);
+                    speak(`Denaro insufficiente per pagare ${formatMoneyForSpeech(jailFee)}. Procurati il denaro o attendi l'affitto da qualcun altro`);
                     return;
                 }
                 updateBalance(activeActor, -jailFee);
