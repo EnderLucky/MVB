@@ -550,10 +550,10 @@
                 text: "Carta imprevisti: Vai alla proprietà colorata disponibile più vicina. Se la vuoi comprare devi pagare il doppio del prezzo di mercato, altrimenti puoi sempre fare un'asta. Se non ci sono più proprietà disponibili non fare nulla", weight: 1,
             },
             {
-                text: "Carta imprevisti: Sai qual è il colmo per una carta imprevisti? Non fare nulla!. . . Badum tiss", weight: 1,
+                text: "Carta imprevisti: Sai qual è il colmo per una carta imprevisti? Non fare nulla!", weight: 1,
             },
             {
-                text: "Carta imprevisti: Errata corrige, restituisci la carta esci gratis di prigione, se ne hai una...", weight: 1,
+                text: "Carta imprevisti: Errata còrrige, restituisci la carta esci gratis di prigione, se ne hai una...", weight: 1,
             },
             {
                 text: "Carta imprevisti: Un giocatore ti querela per calunnia, scegli un giocatore a cui dare 500000 usando il comando: paga.", weight: 1,
@@ -628,8 +628,17 @@
 
             const t = finalText.toLowerCase();
             const isPositive = t.includes("incass") || t.includes("ritir") || t.includes("ricev") || t.includes("vinc") || t.includes("donato") || t.includes("eredit") || t.includes("aggiunto al");
+            const isColmo = t.includes("colmo");
 
-            speak(finalText, isPositive ? "Ka-ching" : null, true);
+            // Scegli quale effetto sonoro applicare
+            let soundToPlay = null;
+            if (isColmo) {
+                soundToPlay = "badum-tiss"; // Se contiene "colmo", imposta il badum-tiss
+            } else if (isPositive) {
+                soundToPlay = "Ka-ching";  // Altrimenti, se è positivo, metti il Ka-ching
+            }
+
+            speak(finalText, soundToPlay, true); // <-- PASSIAMO LA VARIABILE QUI
             setTimeout(() => { if (card.effect) card.effect(); }, 100);
         }
 
@@ -651,7 +660,8 @@
             'martelletto': 'martelletto.mp3',
             'build': 'build.mp3',
             'gameover': 'gameover.mp3',
-            'victory': 'victory.mp3'
+            'victory': 'victory.mp3',
+            'badum-tiss': 'badum-tiss.mp3'
         };
 
         function preloadAudios() {
