@@ -571,6 +571,15 @@
                 }
             },
             {
+                text: "Carta imprevisti: Vendi a prezzo d'oro le tue RAM usate. Incassi 500000.", weight: 1,
+                effect: () => {
+                    updateBalance(activeActor, 500000);
+                }
+            },
+            {
+                text: "Carta imprevisti: Hai fatto credito ad un altro giocatore, è ora di saldare i conti, scegli un giocatore che ti deve pagare 600000 facendogli usare il comando: paga 600 a.", weight: 1,
+            },
+            {
                 text: "Carta imprevisti: Sei stato eletto sindaco per un giorno! Ogni giocatore ti paga 200000.", weight: 1,
                 effect: () => {
                     const otherPlayers = selectedColors.filter(c =>
