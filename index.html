@@ -1527,15 +1527,27 @@
             // 1. Pulizia: rimuove i punti
             text = text.replace(/\./g, "").toLowerCase();
 
-            // 2. Database delle somme composte
+            // 2. Database delle somme composte (ordinate per valore decrescente in due colonne)
             const paroleComposte = {
-                "cinquantamila": 50000, "centomila": 100000, "centocinquantamila": 150000,
-                "duecentomila": 200000, "duecentocinquantamila": 250000, "trecentomila": 300000,
-                "trecentocinquantamila": 350000, "quattrocentomila": 400000, "quattrocentocinquantamila": 450000,
-                "cinquecentomila": 500000, "cinquecentocinquantamila": 550000, "seicentomila": 600000,
-                "seicentocinquantamila": 650000, "settecentomila": 700000, "settecentocinquantamila": 750000,
-                "ottocentomila": 800000, "ottocentocinquantamila": 850000, "novecentomila": 900000,
-                "novecentocinquantamila": 950000
+                "novecentocinquantamila": 950000, "novecentocinquanta": 950000,
+                "novecentomila": 900000, "novecento": 900000,
+                "ottocentocinquantamila": 850000, "ottocentocinquanta": 850000,
+                "ottocentomila": 800000, "ottocento": 800000,
+                "settecentocinquantamila": 750000, "settecentocinquanta": 750000,
+                "settecentomila": 700000, "settecento": 700000,
+                "seicentocinquantamila": 650000, "seicentocinquanta": 650000,
+                "seicentomila": 600000, "seicento": 600000,
+                "cinquecentocinquantamila": 550000, "cinquecentocinquanta": 550000,
+                "cinquecentomila": 500000, "cinquecento": 500000,
+                "quattrocentocinquantamila": 450000, "quattrocentocinquanta": 450000,
+                "quattrocentomila": 400000, "quattrocento": 400000,
+                "trecentocinquantamila": 350000, "trecentocinquanta": 350000,
+                "trecentomila": 300000, "trecento": 300000,
+                "duecentocinquantamila": 250000, "duecentocinquanta": 250000,
+                "duecentomila": 200000, "duecento": 200000,
+                "centocinquantamila": 150000, "centocinquanta": 150000,
+                "centomila": 100000, "cento": 100000,
+                "cinquantamila": 50000, "cinquanta": 50000,
             };
 
             const paroleSemplici = { "un": 1, "uno": 1, "due": 2, "tre": 3, "quattro": 4, "cinque": 5, "sei": 6, "sette": 7, "otto": 8, "nove": 9, "dieci": 10 };
