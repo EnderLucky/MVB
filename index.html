@@ -256,6 +256,42 @@
             flex-direction: column;
             gap: 10px;
         }
+
+        .money-diff {
+            position: absolute;
+            top: 50%;
+            left: 105%;
+            transform: translateY(-50%);
+            font-weight: bold;
+            font-size: 1.1rem;
+            white-space: nowrap;
+            text-shadow: 0 0 5px rgba(0, 0, 0, 1);
+            animation: fadeSlide 2s forwards;
+            pointer-events: none;
+            z-index: 30;
+        }
+
+        @keyframes fadeSlide {
+            0% {
+                opacity: 0;
+                transform: translate(0px, -50%);
+            }
+
+            10% {
+                opacity: 1;
+                transform: translate(10px, -50%);
+            }
+
+            80% {
+                opacity: 1;
+                transform: translate(10px, -50%);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translate(10px, -80%);
+            }
+        }
     </style>
 </head>
 
@@ -1492,21 +1528,71 @@
             // Controllo: giocatore in bancarotta non può ricevere/transare
             if (gameState.bankruptPlayers.includes(player)) return;
 
-            gameState.players[player].balance += amount;
-            document.getElementById(`bal-${player}`).textContent = formatMoney(gameState.players[player].balance);
+            const oldBalance = gameState.players[player].balance;
+            const newBalance = oldBalance + amount;
+            gameState.players[player].balance = newBalance;
+
+            if (amount === 0) return;
+
+            // Cancella eventuale intervallo precedente per evitare conflitti
+            if (gameState.players[player].animInterval) {
+                clearInterval(gameState.players[player].animInterval);
+            }
+
+            // Animazione testo saldo (15 step in 0.75 secondi = 50ms per step)
+            let step = 0;
+            const totalSteps = 15;
+            const stepAmount = amount / totalSteps;
+            const moneyEl = document.getElementById(`bal-${player}`);
+
+            gameState.players[player].animInterval = setInterval(() => {
+                step++;
+                if (step >= totalSteps) {
+                    clearInterval(gameState.players[player].animInterval);
+                    moneyEl.textContent = formatMoney(newBalance);
+                    moneyEl.style.color = newBalance < 0 ? "#FFA500" : "#fff";
+                } else {
+                    const currentVal = oldBalance + (stepAmount * step);
+                    moneyEl.textContent = formatMoney(currentVal);
+                    moneyEl.style.color = currentVal < 0 ? "#FFA500" : "#fff";
+                }
+            }, 50);
+
+            // Crea elemento per la differenza (+ / -) a lato del chip
+            const card = document.getElementById(`card-${player}`);
+            const diffEl = document.createElement('div');
+            diffEl.className = 'money-diff';
+
+            let diffStr = formatMoney(Math.abs(amount));
+            if (amount > 0) {
+                diffEl.textContent = `+ ${diffStr}`;
+                diffEl.style.color = 'var(--verde)';
+            } else {
+                diffEl.textContent = `- ${diffStr}`;
+                diffEl.style.color = 'var(--rosso)';
+            }
+
+            card.appendChild(diffEl);
+
+            // Rimuovi l'elemento della differenza alla fine dell'animazione
+            setTimeout(() => {
+                diffEl.remove();
+            }, 2000);
         }
 
         // TRASFORMA I NUMERI IN TESTO LEGGIBILE (es: 1500000 -> "1,50 milioni") - PER VISUALIZZAZIONE
         function formatMoney(n) {
-            if (n >= 1000000) {
-                let val = (n / 1000000).toFixed(2).replace('.', ',');
-                return val + (val === "1,00" ? " milione" : " milioni");
+            let sign = n < 0 ? "-" : "";
+            let absNum = Math.abs(n);
+            if (absNum >= 1000000) {
+                let val = (absNum / 1000000).toFixed(2).replace('.', ',');
+                return sign + val + (val === "1,00" ? " milione" : " milioni");
             }
-            if (n >= 1000) {
-                let val = (n / 1000).toFixed(2).replace('.', ',');
-                return val + " mila";
+            if (absNum >= 1000) {
+                let val = (absNum / 1000).toFixed(2).replace('.', ',');
+                return sign + val + " mila";
             }
-            return n.toLocaleString('it-IT');
+            return sign + absNum.toLocaleString('it-IT');
         }
 
         // TRASFORMA I NUMERI IN TESTO PER LA SINTESI VOCALE (solo numeri interi)
